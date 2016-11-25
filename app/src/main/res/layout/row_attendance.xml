@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edittext_bottom_line"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/common_10_dp"
+        android:weightSum="10">
+
+
+        <RelativeLayout
+            android:layout_width="@dimen/common_0_dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3">
+
+            <com.kittyapplication.custom.CustomTextViewBold
+                android:id="@+id/txtAttendanceName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="@dimen/common_5_dp"
+                android:singleLine="true" />
+
+            <com.kittyapplication.custom.CustomTextViewBold
+                android:id="@+id/txtAttendanceNameWith"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtAttendanceName"
+                android:layout_marginTop="@dimen/common_10_dp"
+                android:lineSpacingExtra="@dimen/common_5_dp"
+                android:singleLine="true" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="@dimen/common_0_dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3">
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtAttendanceMobile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="@dimen/common_5_dp"
+                android:singleLine="true" />
+
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtAttendanceMobileWith"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtAttendanceMobile"
+                android:layout_marginTop="@dimen/common_10_dp"
+                android:lineSpacingExtra="@dimen/common_5_dp"
+                android:singleLine="true" />
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="4"
+            android:orientation="vertical"
+            android:weightSum="2">
+
+            <LinearLayout
+                android:id="@+id/llAttendance"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:weightSum="4">
+
+                <ImageView
+                    android:id="@+id/imgAttendanceYes"
+                    android:layout_width="@dimen/common_0_dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.33" />
+
+                <ImageView
+                    android:id="@+id/imgAttendanceNo"
+                    android:layout_width="@dimen/common_0_dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.33" />
+
+                <ImageView
+                    android:id="@+id/imgAttendanceMayBe"
+                    android:layout_width="@dimen/common_0_dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.34" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/llAttendanceWith"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginTop="@dimen/common_5_dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                android:weightSum="4">
+
+                <ImageView
+                    android:id="@+id/imgAttendanceYesWith"
+                    android:layout_width="@dimen/common_0_dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.33" />
+
+                <ImageView
+                    android:id="@+id/imgAttendanceNoWith"
+                    android:layout_width="@dimen/common_0_dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.33" />
+
+                <ImageView
+                    android:id="@+id/imgAttendanceMayBeWith"
+                    android:layout_width="@dimen/common_0_dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.33" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

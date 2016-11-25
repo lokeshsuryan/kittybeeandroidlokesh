@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/common_3_dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/partner_background">
+
+        <FrameLayout
+            android:id="@+id/frPartnerPromotional"
+            android:layout_width="match_parent"
+            android:layout_height="130dp">
+
+            <ImageView
+                android:id="@+id/imgPartnerPromotional"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/common_5_dp"
+                android:scaleType="fitXY" />
+
+            <ProgressBar
+                android:id="@+id/pbLoaderPartnerPromotionalImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:id="@+id/txtPartnerNamePromotional"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/frPartnerPromotional"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:id="@+id/txtPartnerPromotionalAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtPartnerNamePromotional"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="@dimen/common_5_dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textSize="@dimen/h6" />
+
+    </RelativeLayout>
+</LinearLayout>

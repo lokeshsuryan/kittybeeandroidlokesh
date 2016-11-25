@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rlContact"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:padding="@dimen/activity_horizontal_margin">
+
+    <com.kittyapplication.custom.RoundedImageView
+        android:id="@+id/imgContactUser"
+        android:layout_width="@dimen/common_48_dp"
+        android:layout_height="@dimen/common_48_dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin" />
+
+    <com.kittyapplication.custom.CustomTextViewBold
+        android:id="@+id/txtContactName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/imgContactUser"
+        android:layout_toLeftOf="@+id/rlContactButtons"
+        android:layout_toRightOf="@+id/imgContactUser"
+        android:layout_toStartOf="@+id/rlContactButtons"
+        android:textColor="@color/black"
+        android:textSize="@dimen/h4" />
+
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtContactTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtContactName"
+        android:layout_marginTop="@dimen/common_5_dp"
+        android:layout_toEndOf="@id/imgContactUser"
+        android:layout_toLeftOf="@+id/rlContactButtons"
+        android:layout_toRightOf="@+id/imgContactUser"
+        android:layout_toStartOf="@id/rlContactButtons"
+        android:lineSpacingExtra="@dimen/common_5_dp"
+        android:maxLength="60"
+        android:text="@string/app_msg"
+        android:textColor="@color/registrationtextcolor"
+        android:textSize="@dimen/h5" />
+
+    <RelativeLayout
+        android:id="@id/rlContactButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="@dimen/common_5_dp"
+        android:layout_marginStart="@dimen/common_5_dp">
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:id="@+id/txtContactInvite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:background="@drawable/contact_invite_bg"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:paddingLeft="@dimen/common_20_dp"
+            android:paddingRight="@dimen/common_20_dp"
+            android:paddingTop="@dimen/common_5_dp"
+            android:text="@string/invite"
+            android:textColor="@color/white"
+            android:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/imgContactPhone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_phone"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+</RelativeLayout>

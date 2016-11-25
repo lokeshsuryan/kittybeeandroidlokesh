@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llMain"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imgInvitationCard"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY" />
+
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:gravity="center"-->
+    <!--android:orientation="vertical"-->
+    <!--android:paddingLeft="@dimen/activity_horizontal_margin"-->
+    <!--android:paddingStart="@dimen/activity_horizontal_margin">-->
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtHedder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/common_30_dp"
+        android:text="@string/invite_card_hey_dearies"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="@dimen/h1" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtHaderTwo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtHedder"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/common_20_dp"
+        android:gravity="center"
+        android:lineSpacingExtra="@dimen/common_5_dp"
+        android:text="@string/invite_card_its_kitty_time"
+        android:textColor="@color/registrationtextcolor"
+        android:textSize="@dimen/h6" />
+
+    <ImageView
+        android:id="@+id/imgDividerOne"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtHaderTwo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_20_dp"
+        android:layout_marginEnd="@dimen/common_50_dp"
+        android:layout_marginLeft="@dimen/common_50_dp"
+        android:layout_marginRight="@dimen/common_50_dp"
+        android:layout_marginStart="@dimen/common_50_dp"
+        android:layout_marginTop="@dimen/common_50_dp"
+        android:src="@drawable/divider" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtInviteKittyName"
+        style="@style/leftRightMarginStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/imgDividerOne"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:gravity="center"
+        android:textSize="@dimen/h4" />
+
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txthost"
+        style="@style/leftRightMarginStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtInviteKittyName"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:gravity="center"
+        android:textSize="@dimen/h4" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtInviteKittyDate"
+        style="@style/leftRightMarginStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txthost"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:gravity="center"
+        android:textSize="@dimen/h4" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtKittyTime"
+        style="@style/leftRightMarginStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtInviteKittyDate"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:gravity="center"
+        android:textSize="@dimen/h4" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtInviteKittyVenue"
+        style="@style/leftRightMarginStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtKittyTime"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:gravity="center"
+        android:textSize="@dimen/h4" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtInviteKittyAddress"
+        style="@style/leftRightMarginStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtInviteKittyVenue"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:gravity="center"
+        android:textSize="@dimen/h4" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtInviteKittyDressCode"
+        style="@style/leftRightMarginStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtInviteKittyAddress"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:gravity="center"
+        android:textSize="@dimen/h4" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtInviteKittyPunctualTimeOne"
+        style="@style/leftRightMarginStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtInviteKittyDressCode"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:gravity="center"
+        android:textSize="@dimen/h4" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtInviteKittyPunctualTimeTwo"
+        style="@style/leftRightMarginStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtInviteKittyPunctualTimeOne"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:textSize="@dimen/h4" />
+
+
+    <ImageView
+        android:id="@+id/imgDividerTwo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtInviteKittyPunctualTimeTwo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_20_dp"
+        android:layout_marginEnd="@dimen/common_50_dp"
+        android:layout_marginLeft="@dimen/common_50_dp"
+        android:layout_marginRight="@dimen/common_50_dp"
+        android:layout_marginStart="@dimen/common_50_dp"
+        android:layout_marginTop="@dimen/common_20_dp"
+        android:src="@drawable/divider" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:text="PLEASE CONFIRM"
+        android:textColor="@color/colorPurpleInvitationCard"
+        android:textSize="@dimen/h4"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/common_20_dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:id="@+id/txtYes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_yes"
+            android:gravity="center"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:paddingEnd="@dimen/common_15_dp"
+            android:paddingLeft="@dimen/common_15_dp"
+            android:paddingRight="@dimen/common_15_dp"
+            android:paddingStart="@dimen/common_15_dp"
+            android:paddingTop="@dimen/common_5_dp"
+            android:text="@string/yes"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/h5" />
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:id="@+id/txtNo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/common_30_dp"
+            android:layout_marginStart="@dimen/common_30_dp"
+            android:background="@drawable/shape_no"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:paddingEnd="@dimen/common_15_dp"
+            android:paddingLeft="@dimen/common_15_dp"
+            android:paddingRight="@dimen/common_15_dp"
+            android:paddingStart="@dimen/common_15_dp"
+            android:paddingTop="@dimen/common_5_dp"
+            android:text="@string/no"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/h5" />
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:id="@+id/txtMaybe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/common_30_dp"
+            android:layout_marginStart="@dimen/common_30_dp"
+            android:background="@drawable/shape_maybe"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:paddingEnd="@dimen/common_15_dp"
+            android:paddingLeft="@dimen/common_15_dp"
+            android:paddingRight="@dimen/common_15_dp"
+            android:paddingStart="@dimen/common_15_dp"
+            android:paddingTop="@dimen/common_5_dp"
+            android:text="@string/maybe"
+            android:textColor="@color/black"
+            android:textSize="@dimen/h5" />
+
+    </LinearLayout>
+
+    <!--</LinearLayout>-->
+
+</RelativeLayout>

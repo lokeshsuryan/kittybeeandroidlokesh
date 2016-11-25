@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.kittyapplication.custom.CustomTextViewBold
+        android:id="@+id/txtLetsStart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginEnd="@dimen/common_10_dp"
+        android:layout_marginRight="@dimen/common_10_dp"
+        android:background="@android:color/transparent"
+        android:gravity="right"
+        android:padding="@dimen/common_10_dp"
+        android:text="@string/let_s_start"
+        android:textColor="@color/white"
+        android:textSize="@dimen/h3"
+        android:visibility="gone" />
+
+</FrameLayout>

@@ -1,0 +1,59 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <!-- Common Text Size -->
+    <dimen name="h1">24sp</dimen>
+    <dimen name="h2">20sp</dimen>
+    <dimen name="h3">18sp</dimen>
+    <dimen name="h4">16sp</dimen>
+    <dimen name="h5">14sp</dimen>
+    <dimen name="h6">12sp</dimen>
+    <dimen name="h7">10sp</dimen>
+    <dimen name="h8">8sp</dimen>
+    <!-- Common dimen -->
+    <dimen name="common_1_dp">1dp</dimen>
+    <dimen name="common_2_dp">2dp</dimen>
+    <dimen name="common_3_dp">3dp</dimen>
+    <dimen name="common_5_dp">5dp</dimen>
+    <dimen name="common_8_dp">8dp</dimen>
+    <dimen name="common_10_dp">10dp</dimen>
+    <dimen name="common_15_dp">15dp</dimen>
+    <dimen name="common_20_dp">20dp</dimen>
+    <dimen name="common_25_dp">25dp</dimen>
+    <dimen name="common_30_dp">30dp</dimen>
+    <dimen name="common_40_dp">40dp</dimen>
+    <dimen name="common_48_dp">48dp</dimen>
+    <dimen name="common_50_dp">50dp</dimen>
+    <dimen name="common_60_dp">60dp</dimen>
+    <dimen name="common_80_dp">80dp</dimen>
+    <dimen name="common_100_dp">100dp</dimen>
+    <dimen name="common_35_dp">35dp</dimen>
+    <dimen name="common_45_dp">35dp</dimen>
+    <dimen name="common_65_dp">65dp</dimen>
+
+    <dimen name="drawer_header_height">190dp</dimen>
+
+    <!--profile screen-->
+    <dimen name="profile_header_height">250dp</dimen>
+    <dimen name="img_profile_left_user_height_width">135dp</dimen>
+    <dimen name="img_profile_right_user_height_width">120dp</dimen>
+    <dimen name="img_profile_margin">70dp</dimen>
+
+    <!--popup fragment-->
+    <dimen name="img_popup_height">200dp</dimen>
+    <dimen name="common_7_dp">7dp</dimen>
+
+    <dimen name="kitty_rule_hadder_height">150dp</dimen>
+    <dimen name="common_90_dp">90dp</dimen>
+    <dimen name="send_btn_size">@dimen/common_40_dp</dimen>
+
+    <dimen name="fab_size_normal">56dp</dimen>
+    <dimen name="fab_size_mini">40dp</dimen>
+    <dimen name="labels_text_size">14sp</dimen>
+
+    <dimen name="list_item_height">80dp</dimen>
+
+</resources>

@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.kittyapplication.MainActivity">
+    <item
+        android:id="@+id/action_edit_myprofile"
+        android:icon="@drawable/ic_action_edit"
+        android:orderInCategory="100"
+        android:title="@string/edit_myprofile"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_home_jump"
+        android:icon="@drawable/ic_drawer_home"
+        android:orderInCategory="100"
+        android:title="@string/home"
+        app:showAsAction="ifRoom" />
+</menu>

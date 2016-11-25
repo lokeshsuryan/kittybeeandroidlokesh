@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/profile_header_height"
+            android:background="@drawable/ic_my_profile_bg">
+
+            <RelativeLayout
+                android:layout_width="@dimen/img_profile_left_user_height_width"
+                android:layout_height="@dimen/img_profile_left_user_height_width"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginEnd="@dimen/img_profile_margin"
+                android:layout_marginLeft="@dimen/common_35_dp"
+                android:layout_marginRight="@dimen/img_profile_margin"
+                android:layout_marginStart="@dimen/common_35_dp"
+                android:layout_marginTop="@dimen/common_45_dp">
+
+                <ProgressBar
+                    android:id="@+id/progressLeft"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone" />
+
+                <com.kittyapplication.custom.RoundedImageView
+                    android:id="@+id/imgMyProfileLeftUserIcon"
+                    android:layout_width="@dimen/img_profile_left_user_height_width"
+                    android:layout_height="@dimen/img_profile_left_user_height_width"
+                    android:clickable="false"
+                    app:civ_border_color="@color/profile_screen_img_border"
+                    app:civ_border_width="@dimen/common_5_dp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="@dimen/common_100_dp"
+                android:layout_height="@dimen/common_100_dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="@dimen/common_65_dp"
+                android:layout_marginRight="@dimen/common_65_dp"
+                android:layout_marginTop="@dimen/common_35_dp">
+
+                <ProgressBar
+                    android:id="@+id/progressRight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone" />
+
+                <com.kittyapplication.custom.RoundedImageView
+                    android:id="@+id/imgMyProfileRightUserIcon"
+                    android:layout_width="@dimen/common_100_dp"
+                    android:layout_height="@dimen/common_100_dp"
+                    android:clickable="false"
+                    app:civ_border_color="@color/profile_screen_img_border"
+                    app:civ_border_width="@dimen/common_5_dp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="@dimen/img_profile_right_user_height_width"
+                android:layout_height="@dimen/img_profile_right_user_height_width"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="@dimen/common_10_dp"
+                android:layout_marginStart="@dimen/common_10_dp"
+                android:layout_marginTop="@dimen/common_20_dp">
+
+                <ProgressBar
+                    android:id="@+id/progressCenter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone" />
+
+                <com.kittyapplication.custom.RoundedImageView
+                    android:id="@+id/imgMyProfileCenterUserIcon"
+                    android:layout_width="@dimen/img_profile_right_user_height_width"
+                    android:layout_height="@dimen/img_profile_right_user_height_width"
+                    android:clickable="false"
+                    app:civ_border_color="@color/profile_screen_img_border"
+                    app:civ_border_width="@dimen/common_5_dp" />
+            </RelativeLayout>
+
+            <com.kittyapplication.custom.CustomEditTextBold
+                android:id="@+id/edtProfileName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/common_20_dp"
+                android:background="@android:color/transparent"
+                android:enabled="false"
+                android:gravity="center"
+                android:imeOptions="actionDone"
+                android:padding="@dimen/common_5_dp"
+                android:singleLine="true"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textSize="@dimen/h4" />
+
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:background="@color/white"
+            android:orientation="vertical">
+
+            <LinearLayout
+                style="@style/profileLineLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal|center_vertical"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    style="@style/profileLabelStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:text="@string/phone" />
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.5"
+                    android:gravity="center_horizontal">
+
+                    <com.kittyapplication.custom.CustomEditTextNormal
+                        android:id="@+id/edtProfilePhone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:layout_marginLeft="@dimen/common_5_dp"
+                        android:layout_marginStart="@dimen/common_5_dp"
+                        android:layout_toLeftOf="@+id/phoneActions"
+                        android:layout_toStartOf="@+id/phoneActions"
+                        android:background="@android:color/transparent"
+                        android:enabled="false"
+                        android:gravity="left"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"
+                        android:textSize="@dimen/h4" />
+
+                    <LinearLayout
+                        android:id="@+id/phoneActions"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/imgActionCall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/ic_phone"
+                            android:visibility="gone" />
+
+                        <ImageView
+                            android:id="@+id/imgActionChat"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/ic_context_chat"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/profile_view_divider" />
+
+            <LinearLayout
+                style="@style/profileLineLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    style="@style/profileLabelStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/status" />
+
+                <com.kittyapplication.custom.CustomEditTextBold
+                    android:id="@+id/edtProfileStatus"
+                    style="@style/profileEditTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="textShortMessage"
+                    android:singleLine="true" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/profile_view_divider" />
+
+            <LinearLayout
+                style="@style/profileLineLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    style="@style/profileLabelStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/email" />
+
+                <com.kittyapplication.custom.CustomEditTextBold
+                    android:id="@+id/edtProfileEmail"
+                    style="@style/profileEditTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionDone"
+                    android:singleLine="true" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/profile_view_divider" />
+
+            <LinearLayout
+                style="@style/profileLineLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    style="@style/profileLabelStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sex" />
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.5"
+                    android:gravity="left|start">
+
+                    <RadioGroup
+                        android:id="@+id/rgGender"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checkedButton="@+id/rbNotnow"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbMale"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/male"
+                            android:textSize="@dimen/h6" />
+
+                        <RadioButton
+                            android:id="@+id/rbFemale"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/female"
+                            android:textSize="@dimen/h6" />
+
+                        <RadioButton
+                            android:id="@+id/rbNotnow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/not_now"
+                            android:textSize="@dimen/h6" />
+
+                    </RadioGroup>
+
+                    <Spinner
+                        android:id="@+id/spProfileSex"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/profile_view_divider" />
+
+            <LinearLayout
+                android:id="@+id/llBirthday"
+                style="@style/profileLineLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    style="@style/profileLabelStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@string/dob" />
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    android:id="@+id/txtBirthday"
+                    style="@style/profileEditTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:drawableEnd="@drawable/ic_context_calendar"
+                    android:drawableRight="@drawable/ic_context_calendar"
+                    android:gravity="center_vertical"
+                    android:singleLine="true"
+                    android:textColor="@color/txt_enable_disable_colors" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/profile_view_divider" />
+
+            <LinearLayout
+                android:id="@+id/llAnniversary"
+                style="@style/profileLineLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    style="@style/profileLabelStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/doa" />
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    android:id="@+id/txtAnniversary"
+                    style="@style/profileEditTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:drawableEnd="@drawable/ic_context_calendar"
+                    android:drawableRight="@drawable/ic_context_calendar"
+                    android:gravity="center_vertical"
+                    android:singleLine="true"
+                    android:textColor="@color/txt_enable_disable_colors" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/profile_view_divider" />
+
+            <LinearLayout
+                style="@style/profileLineLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    style="@style/profileLabelStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/city" />
+
+                <!--<com.kittyapplication.custom.CustomEditTextBold
+                    android:id="@+id/edtProfileCity"
+                    style="@style/profileEditTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:singleLine="true"
+                    android:text="" />-->
+
+                <com.kittyapplication.custom.AutoCompleteTextView
+                    android:id="@+id/edtProfileCity"
+                    style="@style/profileEditTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:singleLine="true"
+                    android:text="" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/profile_view_divider" />
+
+
+            <LinearLayout
+                style="@style/profileLineLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomTextViewBold
+                    style="@style/profileLabelStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/address" />
+
+                <com.kittyapplication.custom.CustomEditTextBold
+                    android:id="@+id/edtProfileAddress"
+                    style="@style/profileEditTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionDone"
+                    android:singleLine="true" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:id="@+id/txtProfileUpdate"
+            style="@style/appColorButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/common_20_dp"
+            android:text="@string/update"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</ScrollView>

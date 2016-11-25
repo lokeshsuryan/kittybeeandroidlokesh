@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/dialog_bg_white_rounded"
+    android:padding="@dimen/common_10_dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/activity_horizontal_margin">
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/common_5_dp"
+            android:text="Next kitty date will be" />
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:id="@+id/txtdate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:drawableLeft="@drawable/ic_context_calendar"
+            android:drawablePadding="@dimen/activity_horizontal_margin"
+            android:padding="@dimen/common_5_dp" />
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:text="@string/click_above_to_change"
+            android:textSize="@dimen/h6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="@color/fabButtonColor5_50P"
+        android:padding="@dimen/activity_horizontal_margin">
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/common_5_dp"
+            android:text="@string/next_host_will_be" />
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:id="@+id/txtHostNames"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:padding="@dimen/common_5_dp"/>
+
+    </LinearLayout>
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtSubmit"
+        style="@style/appColorButtonStyleGreen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/submit"/>
+
+</LinearLayout>

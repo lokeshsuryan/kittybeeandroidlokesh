@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingEnd="@dimen/common_10_dp"
+    android:paddingLeft="@dimen/common_10_dp"
+    android:paddingRight="@dimen/common_10_dp"
+    android:paddingStart="@dimen/common_10_dp"
+    android:paddingTop="@dimen/common_10_dp">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardUseCompatPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.kittyapplication.custom.CustomTextViewBold
+                android:id="@+id/txtNotesTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center|left"
+                android:paddingBottom="@dimen/common_5_dp"
+                android:paddingEnd="@dimen/common_5_dp"
+                android:paddingLeft="@dimen/common_5_dp"
+                android:paddingRight="@dimen/common_5_dp"
+                android:paddingStart="@dimen/common_5_dp"
+                android:paddingTop="@dimen/common_10_dp" />
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtNotesData"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtNotesTitle"
+                android:gravity="center|left"
+                android:paddingBottom="@dimen/common_10_dp"
+                android:paddingEnd="@dimen/common_5_dp"
+                android:paddingLeft="@dimen/common_5_dp"
+                android:paddingRight="@dimen/common_5_dp"
+                android:paddingStart="@dimen/common_5_dp"
+                android:paddingTop="@dimen/common_5_dp" />
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+    <!--<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/common_5_dp"
+        android:layout_marginEnd="@dimen/common_10_dp"
+        android:layout_marginLeft="@dimen/common_10_dp"
+        android:layout_marginRight="@dimen/common_10_dp"
+        android:layout_marginStart="@dimen/common_10_dp"
+        android:layout_marginTop="@dimen/common_5_dp"
+        android:background="@drawable/border_rectangle_notes"
+        android:orientation="vertical">
+
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:id="@+id/txtNotesTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center|left"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:paddingEnd="@dimen/common_5_dp"
+            android:paddingLeft="@dimen/common_5_dp"
+            android:paddingRight="@dimen/common_5_dp"
+            android:paddingStart="@dimen/common_5_dp"
+            android:paddingTop="@dimen/common_10_dp" />
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:id="@+id/txtNotesData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtNotesTitle"
+            android:gravity="center|left"
+            android:paddingBottom="@dimen/common_10_dp"
+            android:paddingEnd="@dimen/common_5_dp"
+            android:paddingLeft="@dimen/common_5_dp"
+            android:paddingRight="@dimen/common_5_dp"
+            android:paddingStart="@dimen/common_5_dp"
+            android:paddingTop="@dimen/common_5_dp" />
+    </LinearLayout>-->
+</RelativeLayout>

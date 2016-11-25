@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/appBarHome"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:theme="@style/AppTheme.AppBarOverlay">
+
+    <FrameLayout
+        android:id="@+id/frmHome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbarHome"
+            style="@style/ActionBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorAccent"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/common_50_dp"
+            android:layout_marginStart="@dimen/common_50_dp"
+            android:gravity="center">
+
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/rlNotification"
+                android:background="@color/colorPrimary">
+
+                <ImageView
+                    android:id="@+id/imgNotification"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_drawer_notification"
+                    android:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/txtBadgeText"
+                    android:layout_width="@dimen/common_15_dp"
+                    android:layout_height="@dimen/common_15_dp"
+                    android:layout_alignEnd="@id/imgNotification"
+                    android:layout_alignRight="@id/imgNotification"
+                    android:layout_alignTop="@id/imgNotification"
+                    android:background="@drawable/drawable_badge"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/h5"
+                    android:textStyle="bold"
+                    android:text="*"
+                    android:visibility="visible" />
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/imgProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left|center_vertical"
+                android:layout_toEndOf="@id/rlNotification"
+                android:layout_toRightOf="@id/rlNotification"
+                android:src="@drawable/ic_drawer_my_profile"
+                android:visibility="gone" />
+        </RelativeLayout>
+
+
+        <TextView
+            android:id="@+id/txtToolbarTitleHome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginEnd="@dimen/common_30_dp"
+            android:layout_marginLeft="@dimen/common_30_dp"
+            android:layout_marginRight="@dimen/common_30_dp"
+            android:layout_marginStart="@dimen/common_30_dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="asd"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+    </FrameLayout>
+    <!--android:maxLength="22"-->
+
+
+</android.support.design.widget.AppBarLayout>

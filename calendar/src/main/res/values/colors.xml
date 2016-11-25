@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">@android:color/transparent</color>
+    <color name="colorPrimaryDark">#00B2C9</color>
+    <color name="colorAccent">#80deea</color>
+    <color name="white">#ffffff</color>
+
+    <!-- Calendar -->
+    <color name="calendar_month_text">#757575</color>
+    <color name="blue_circle_calendar">@color/colorPrimaryDark</color>
+    <color name="news_icon_background">#E3E3E3</color>
+    <color name="colorDarkGrey">#333333</color>
+
+
+</resources>

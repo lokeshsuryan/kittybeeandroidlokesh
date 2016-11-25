@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/imgAdvertisement">
+
+        <ListView
+            android:id="@+id/lvNotification"
+            android:layout_width="match_parent"
+            android:divider="@color/colorAccent"
+            android:dividerHeight="0.5dp"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/txtEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/common_20_dp"
+            android:gravity="center"
+            android:textSize="@dimen/h1"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+
+    <include layout="@layout/layout_bottom_advertise" />
+
+</RelativeLayout>
