@@ -35,7 +35,6 @@ public class AddGroupContactAdapter extends BaseAdapter implements Filterable {
     private List<ContactDao> mListClone;
     private Context mContext;
     private static LayoutInflater inflater = null;
-
     private ItemFilter filter;
     private List<ContactDao> mSelectedList;
     private int mType;
