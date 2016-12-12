@@ -127,7 +127,7 @@ public class GooglePlayServicesHelper {
         }.execute(senderId);
     }
 
-    protected void saveGcmRegIdToPreferences(String gcmRegId) {
+    public void saveGcmRegIdToPreferences(String gcmRegId) {
         int appVersion = VersionUtils.getAppVersion();
         Log.i(TAG, "Saving gcmRegId on app version " + appVersion);
 

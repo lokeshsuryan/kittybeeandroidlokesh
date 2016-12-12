@@ -10,10 +10,10 @@ public class AppConstant {
     public static final int CONNECTION_TIMEOUT = 120000;
 
     //TODO BOOLEAN VENTURA SERVER URL
-    public static final String BASE_URL = "http://booleanventura.com/sandbox/api/";
+//    public static final String BASE_URL = "http://booleanventura.com/sandbox/api/";
 
     //TODO LIVE SERVER URL
-//    public static final String BASE_URL = "http://kittybee.in/api/";
+    public static final String BASE_URL = "http://kittybee.in/api/";
 
     public static final int RESPONSE_SUCCESS = 1;
     public static final int RESPONSE_FAIL = 0;
@@ -141,7 +141,12 @@ public class AppConstant {
 
 
     public static final int LOCATION_INTERVAL = 1000; // 30
+    public static final long EXPIRE_TIME_LOCATION = 5000;
     public static final int MIN_DISTANCE = 0; // Meter
     public static final int LOCATION_PRIORITY = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
+
+    public static final String EXTRA_CLICKED_ITEM_INDEX = "clicked_item_index";
+
+    public static final String PREF_DEVICE_ID = "deviceId";
 
 }

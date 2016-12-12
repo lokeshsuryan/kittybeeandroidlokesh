@@ -1,3 +1,4 @@
+
 <resources>
     <string name="app_name">KittyBee</string>
     <string name="action_settings">Settings</string>
@@ -205,7 +206,7 @@
     <!-- ******Dhaval Soneji******* -->
     <string name="server_error">Yikes! Something went wrong, Please try again</string>
     <string name="gcm_project_id" translatable="false">23596211365</string>
-    <string name="google_app_id" translatable="false">23596211365</string>
+    <!--<string name="google_app_id" translatable="false">23596211365</string>-->
     <string name="lbl_otp">OTP</string>
     <string name="maybe">Maybe</string>
     <string name="_5_min_ago">5 min ago</string>
@@ -507,4 +508,15 @@
     <string name="version_v">version v%1$s</string>
     <string name="select_host_warning">Please select a member.</string>
 
+    <!-- List key features strings -->
+    <string name="loading">Loading...</string>
+    <string name="search_query_no_result">No result found for %1$s.</string>
+    <string name="tap_on_hold">Tap on hold to more option.</string>
+
+    <string name="user_id_warning">%1$s not using KittyBee App.</string>
+
+    <string name="arrange_kitty">Arrange your Kitty party</string>
+    <string name="arrange_any_other_kitty">Arrange any other party</string>
+    <string name="arrange_call_back_kitty">Arrange call back</string>
+    <string name="kitty_manager">Kitty Manager</string>
 </resources>

@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
 import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.chat.utils.qb.QbDialogHolder;
@@ -45,7 +46,7 @@ import com.kittyapplication.utils.ImageUtils;
 import com.kittyapplication.utils.KittyPrefHolder;
 import com.kittyapplication.utils.Utils;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBDialogType;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
@@ -82,7 +83,7 @@ public class ChatListAdapter extends BaseListAdapter<Kitty> implements Filterabl
         mContext = context;
     }
 
-    public void addCreatedDialog(QBDialog qbDialog) {
+    public void addCreatedDialog(QBChatDialog qbDialog) {
         try {
             Log.d(TAG, "addCreatedDialog");
             Kitty kitty = new Kitty();
@@ -100,7 +101,7 @@ public class ChatListAdapter extends BaseListAdapter<Kitty> implements Filterabl
     public void updatedMessage(QBChatMessage message) {
         try {
             for (Kitty kitty : getList()) {
-                QBDialog qbDialog = kitty.getQbDialog();
+                QBChatDialog qbDialog = kitty.getQbDialog();
                 if (qbDialog.getDialogId().equals(message.getDialogId())) {
                     qbDialog.setLastMessage(message.getBody());
                     int unreadCount = qbDialog.getUnreadMessageCount();
@@ -116,7 +117,7 @@ public class ChatListAdapter extends BaseListAdapter<Kitty> implements Filterabl
         }
     }
 
-    public void updatedDialog(final QBDialog qbDialog) {
+    public void updatedDialog(final QBChatDialog qbDialog) {
 //        try {
 //            AppLog.d(TAG, "updatedDialog::" + new Gson().toJson(qbDialog));
 //            boolean isCreated = true;
@@ -224,7 +225,7 @@ public class ChatListAdapter extends BaseListAdapter<Kitty> implements Filterabl
             AppLog.d(TAG, "updatedGroupChat: " + group.getGroup().getName());
             for (int i = 0; i < getList().size(); i++) {
                 Kitty kitty = getList().get(i);
-                QBDialog qbDialog = group.getQbDialog();
+                QBChatDialog qbDialog = group.getQbDialog();
 
                 if (kitty.getQbDialog().getDialogId().equals(qbDialog.getDialogId())) {
                     // Don't update if no changes in last message
@@ -287,7 +288,7 @@ public class ChatListAdapter extends BaseListAdapter<Kitty> implements Filterabl
                 @Override
                 public void onClick(View v) {
                     Kitty chat = (Kitty) v.getTag(R.layout.row_chat_list);
-                    QBDialog dialog = chat.getQbDialog();
+                    QBChatDialog dialog = chat.getQbDialog();
                     ChatData data = chat.getGroup();
                     String strData = new Gson().toJson(data).toString();
 //                    ChatActivity.startForResult((Activity) mContext,
@@ -731,7 +732,7 @@ class ChatListHolder {
 
     public void bind(Kitty kitty) {
         try {
-            QBDialog dialog = kitty.getQbDialog();
+            QBChatDialog dialog = kitty.getQbDialog();
             setChatTitle(dialog.getName());
 
             setLastMessage(dialog.getLastMessage());
@@ -747,7 +748,7 @@ class ChatListHolder {
 
     private void setPrivateAndGroupChatAttribute(Kitty kitty) {
         try {
-            QBDialog dialog = kitty.getQbDialog();
+            QBChatDialog dialog = kitty.getQbDialog();
             ChatData chatData = kitty.getGroup();
             switch (dialog.getType()) {
                 case GROUP:
@@ -764,7 +765,7 @@ class ChatListHolder {
                     break;
 
                 default:
-                    String msg = ResourceUtils.getString(R.string.chat_unsupported_type);
+                    String msg = ResourceUtils.getString(AppApplication.getInstance(),R.string.chat_unsupported_type);
                     Toaster.shortToast(String.format("%s %s", msg, dialog.getType().name()));
                     break;
             }

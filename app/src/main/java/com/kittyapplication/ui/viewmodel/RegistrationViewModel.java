@@ -25,6 +25,7 @@ import com.riontech.socialconnection.listeners.SocialConnectionListener;
 import com.riontech.socialconnection.model.SocialUserResponse;
 import com.riontech.socialconnection.social.FacebookManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -42,11 +43,13 @@ public class RegistrationViewModel extends QBUserViewModel {
     public FacebookManager mFaceBookManager;
     private String mMobileNumber;
     private RegisterResponseDao responseDao;
+    private List<CityDao> mCityList = new ArrayList<>();
     private String filePath;
 
     public RegistrationViewModel(RegistrationActivity activity) {
         mActivity = activity;
-        getCityDao();
+        if (!Utils.isValidList(mCityList))
+            getCityDao();
     }
 
     /**
@@ -325,6 +328,7 @@ public class RegistrationViewModel extends QBUserViewModel {
                         try {
                             if (response.body().getResponse() == AppConstant.RESPONSE_SUCCESS) {
                                 if (Utils.isValidList(response.body().getData())) {
+                                    mCityList.addAll(response.body().getData());
                                     mActivity.setCityAdapter(response.body().getData());
                                 }
                             }

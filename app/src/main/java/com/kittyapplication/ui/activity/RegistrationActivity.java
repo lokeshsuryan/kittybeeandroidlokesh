@@ -29,7 +29,6 @@ import com.kittyapplication.chat.utils.Consts;
 import com.kittyapplication.chat.utils.SharedPreferencesUtil;
 import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.chat.utils.qb.QbAuthUtils;
-import com.kittyapplication.chat.utils.qb.QbDialogHolder;
 import com.kittyapplication.core.utils.SharedPrefsHelper;
 import com.kittyapplication.core.utils.SpannableUtils;
 import com.kittyapplication.custom.AutoCompleteTextView;
@@ -43,10 +42,8 @@ import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.ImageUtils;
 import com.kittyapplication.utils.PreferanceUtils;
 import com.kittyapplication.utils.Utils;
-import com.quickblox.chat.model.QBDialog;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
-import com.quickblox.core.request.QBRequestGetBuilder;
 import com.quickblox.users.model.QBUser;
 
 import java.util.ArrayList;
@@ -151,6 +148,14 @@ public class RegistrationActivity extends QBSignUpSingInActivity implements Sign
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        mAetCity.setText("");
+        mEdtName.setText("");
+        mEdtEmail.setText("");
+    }
+
+    @Override
     protected View getRootView() {
         return findViewById(R.id.rlRegRoot);
     }
@@ -169,13 +174,15 @@ public class RegistrationActivity extends QBSignUpSingInActivity implements Sign
         //Start Offline Support Service
 //        startService(new Intent(this, OfflineSupportIntentService.class));
 
-        mainThreadHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                recreateChatSession();
-                isAppSessionActive = false;
-            }
-        });
+        startActivity(new Intent(RegistrationActivity.this, HomeActivity.class));
+        finish();
+//        mainThreadHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                recreateChatSession();
+//                isAppSessionActive = false;
+//            }
+//        });
     }
 
     @Override
@@ -304,6 +311,9 @@ public class RegistrationActivity extends QBSignUpSingInActivity implements Sign
         QBUser user = SharedPreferencesUtil.getQbUser();
         if (user != null) {
             reloginToChat(user);
+        } else {
+            startActivity(new Intent(RegistrationActivity.this, HomeActivity.class));
+            finish();
         }
     }
 
@@ -316,6 +326,8 @@ public class RegistrationActivity extends QBSignUpSingInActivity implements Sign
             public void onSuccess(Void result, Bundle bundle) {
                 isAppSessionActive = true;
                 subscribeForPushNotification();
+                startActivity(new Intent(RegistrationActivity.this, HomeActivity.class));
+                finish();
             }
 
             @Override
@@ -338,60 +350,7 @@ public class RegistrationActivity extends QBSignUpSingInActivity implements Sign
         }
 
         // Load QBDialog after login immediately
-        loadDialogsFromQb();
+//        loadDialogsFromQb();
     }
 
-    /**
-     * Load dialog from QB
-     */
-    private void loadDialogsFromQb() {
-        WorkerThread mQbDialogWorkerThread = new WorkerThread("QBWorkerThread");
-        mQbDialogWorkerThread.start();
-        mQbDialogWorkerThread.prepareHandler();
-        mQbDialogWorkerThread.postTask(task);
-    }
-
-    /**
-     *
-     */
-    private class WorkerThread extends HandlerThread {
-        private Handler mWorkerHandler;
-
-        public WorkerThread(String name) {
-            super(name);
-        }
-
-        public void postTask(Runnable task) {
-            mWorkerHandler.post(task);
-        }
-
-        public void prepareHandler() {
-            mWorkerHandler = new Handler(getLooper());
-        }
-
-    }
-
-    /**
-     * Runnable for loading dialogs in worker thread
-     */
-    Runnable task = new Runnable() {
-        @Override
-        public void run() {
-            ChatHelper.getInstance().getDialogs(new QBRequestGetBuilder(), new QBEntityCallback<ArrayList<QBDialog>>() {
-                @Override
-                public void onSuccess(ArrayList<QBDialog> dialogs, Bundle bundle) {
-                    QbDialogHolder.getInstance().addDialogs(dialogs);
-
-                    startActivity(new Intent(RegistrationActivity.this, HomeActivity.class));
-                    finish();
-                }
-
-                @Override
-                public void onError(QBResponseException e) {
-                    startActivity(new Intent(RegistrationActivity.this, HomeActivity.class));
-                    finish();
-                }
-            }, 0);
-        }
-    };
 }

@@ -4,7 +4,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.view.ActionMode;
@@ -26,14 +25,14 @@ import com.google.gson.Gson;
 import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
 import com.kittyapplication.adapter.KittyRecyclerAdapter;
+import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.core.ui.listener.PaginationHistoryListener;
 import com.kittyapplication.custom.ChatComparator;
 import com.kittyapplication.custom.CustomEditTextNormal;
-import com.kittyapplication.custom.CustomTextViewNormal;
 import com.kittyapplication.model.ChatData;
 import com.kittyapplication.sqlitedb.DBQueryHandler;
 import com.kittyapplication.sync.SyncGroupOperation;
-import com.kittyapplication.ui.activity.HomeActivity;
+import com.kittyapplication.sync.callback.DataSyncListener;
 import com.kittyapplication.ui.executor.BackgroundExecutorThread;
 import com.kittyapplication.ui.executor.Interactor;
 import com.kittyapplication.ui.view.DividerItemDecoration;
@@ -44,25 +43,18 @@ import com.kittyapplication.utils.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 
-/**
- * Created by HalfBloodPrince(RIONTECH)
- * Riontech on 8/11/16.
- */
 
-public class KittiesFragment extends Fragment {
+public class KittiesFragment extends BaseFragment {
     private static final String TAG = KittiesFragment.class.getSimpleName();
     private View mRootView;
     private SwipeRefreshLayout mRefreshLayout;
     private CustomEditTextNormal mEdtSearch;
-    private CustomTextViewNormal mTxtRefreshing;
     private ChatViewModel mViewModel;
     private KittyRecyclerAdapter mAdapter;
     private ImageView mImgAdvertise;
     private TextView mTxtEmpty;
-    private boolean isSearch = false;
     private ArrayList<ChatData> mGroupList;
     public ProgressBar mPbLoader;
-    private HomeActivity mActivity;
     private RecyclerView mRecyclerView;
     private ActionMode currentActionMode;
 
@@ -84,7 +76,6 @@ public class KittiesFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_chat_recyclerview, container, false);
-        mActivity = (HomeActivity) getActivity();
         initView();
         return mRootView;
     }
@@ -104,12 +95,20 @@ public class KittiesFragment extends Fragment {
         if (AppApplication.getInstance().isRefresh()) {
             AppApplication.getInstance().setRefresh(false);
             try {
+                setLimit(0);
+                setSkip(0);
                 showProgress();
-                loadData(0);
+//                refreshView();
+                loadData();
             } catch (Exception e) {
                 AppLog.e(TAG, e.getMessage(), e);
             }
         }
+    }
+
+    private void refreshView() {
+        setLimit(mAdapter.getCount());
+        setSkip(0);
     }
 
     @Override
@@ -126,7 +125,6 @@ public class KittiesFragment extends Fragment {
         mTxtEmpty = (TextView) mRootView.findViewById(R.id.txtEmpty);
         mRefreshLayout = (SwipeRefreshLayout) mRootView.findViewById(R.id.srfChatList);
         mEdtSearch = (CustomEditTextNormal) mRootView.findViewById(R.id.edtSearchChatFragment);
-        mTxtRefreshing = (CustomTextViewNormal) mRootView.findViewById(R.id.txtRefreshing);
         mEdtSearch.setVisibility(View.GONE);
         mImgAdvertise = (ImageView) mRootView.findViewById(R.id.imgAdvertisement);
         mPbLoader = (ProgressBar) mRootView.findViewById(R.id.pbLoaderChatFragment);
@@ -153,6 +151,7 @@ public class KittiesFragment extends Fragment {
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                refreshView();
                 syncData();
             }
         });
@@ -182,29 +181,22 @@ public class KittiesFragment extends Fragment {
             mAdapter.setPaginationHistoryListener(new PaginationHistoryListener() {
                 @Override
                 public void downloadMore() {
-//                    loadData();
+                    if (!isFilter()) loadData();
                 }
             });
 
-            loadData(mAdapter.getCount());
+            loadData();
         }
     }
 
-    private void loadData(int count) {
-        mViewModel.fetchGroups(count,
+    private void loadData() {
+        Log.e(TAG, "loadData: skip :: " + getSkip() + " limit :: " + getLimit());
+        mViewModel.fetchGroups(getSkip(), getLimit(),
                 new DBQueryHandler.OnQueryHandlerListener<ArrayList<ChatData>>() {
 
                     @Override
                     public void onResult(final ArrayList<ChatData> result) {
                         bindView(result);
-//                ExecutorThread executorThread = new ExecutorThread();
-//                executorThread.startExecutor();
-//                executorThread.postTask(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        bindView(result);
-//                    }
-//                });
                     }
                 });
     }
@@ -212,10 +204,6 @@ public class KittiesFragment extends Fragment {
     private void bindView(final ArrayList<ChatData> result) {
         try {
             if (result.size() > 0) {
-//                if (mRefreshLayout.isRefreshing())
-                mAdapter.getList().clear();
-
-
                 BackgroundExecutorThread backgroundExecutorThread = new BackgroundExecutorThread();
                 backgroundExecutorThread.execute(new Interactor() {
                     @Override
@@ -231,15 +219,24 @@ public class KittiesFragment extends Fragment {
                 }, new Interactor.OnExecutionFinishListener() {
                     @Override
                     public void onFinish() {
-                        mAdapter.addAtLast(result);
-                        if (mRefreshLayout.isRefreshing()) {
-                            mRefreshLayout.setRefreshing(false);
+
+                        if (getSkip() == 0) {
+                            mAdapter.getList().clear();
+                            AppLog.e(TAG, "isRefreshing");
                         }
+                        mAdapter.addAtLast(result);
                         hideProgress();
+                        setSkip(mAdapter.getCount());
+                        setLimit(0);
+                        showLayout();
                     }
                 });
-            } else if (result.size() == 0 && mAdapter.getItemCount() == 0) {
+            } else if (result.size() == 0 && mAdapter.getCount() == 0) {
                 syncData();
+            }
+
+            if (mRefreshLayout.isRefreshing()) {
+                mRefreshLayout.setRefreshing(false);
             }
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -249,16 +246,20 @@ public class KittiesFragment extends Fragment {
 
     private void syncData() {
         SyncGroupOperation syncOperation = new SyncGroupOperation();
-        syncOperation.syncGroups(new SyncGroupOperation.OnSyncComplete() {
+        syncOperation.syncGroups(new DataSyncListener() {
             @Override
-            public void onCompleted(boolean hasDate) {
-                if (!hasDate && mAdapter.getItemCount() == 0) {
+            public void onCompleted(int itemCount) {
+                AppLog.e(TAG, "syncData: onCompleted" + itemCount);
+                if (itemCount == 0 && mAdapter.getCount() == 0) {
                     showEmptyView();
-                    Log.d(TAG, "onCompleted: if");
-                } else {
-                    loadData(0);
-                    Log.d(TAG, "onCompleted: else");
+                    return;
+                } else if (itemCount == 0) {
+                    mAdapter.setPaginationHistoryListener(null);
+                    return;
+                } else if (itemCount < ChatHelper.ITEMS_PER_PAGE) {
+                    mAdapter.setPaginationHistoryListener(null);
                 }
+                loadData();
             }
         });
     }
@@ -305,7 +306,12 @@ public class KittiesFragment extends Fragment {
     }
 
     public void hideProgress() {
-        mPbLoader.setVisibility(View.GONE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mPbLoader.setVisibility(View.GONE);
+            }
+        });
     }
 
     /**
@@ -321,6 +327,13 @@ public class KittiesFragment extends Fragment {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void reloadData() {
+        if (mAdapter != null && Utils.isValidList(mAdapter.getList())) {
+            mAdapter.reloadData();
+        }
     }
 
     public void updateObject() {

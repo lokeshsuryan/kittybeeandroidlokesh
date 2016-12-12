@@ -5,16 +5,16 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
+        versionCode rootProject.versionCode
+        versionName rootProject.versionName
     }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile "com.google.android.gms:play-services-gcm:${rootProject.playServicesVersion}"
-    compile "com.android.support:design:${rootProject.designVersion}"
-    compile "com.android.support:appcompat-v7:${rootProject.appcompatV7Version}"
+    compile "com.android.support:design:${rootProject.supportVersion}"
+    compile "com.android.support:appcompat-v7:${rootProject.supportVersion}"
 }

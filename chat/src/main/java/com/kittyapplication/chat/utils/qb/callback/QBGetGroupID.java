@@ -1,7 +1,7 @@
 package com.kittyapplication.chat.utils.qb.callback;
 
 import com.quickblox.chat.QBGroupChatManager;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 
 /**
  * Created by Pintu Riontech on 20/8/16.
@@ -9,7 +9,7 @@ import com.quickblox.chat.model.QBDialog;
  */
 public interface QBGetGroupID {
 
-    void getQuickBloxGroupID(QBDialog dialog, String message, QBGroupChatManager groupChatManager);
+    void getQuickBloxGroupID(QBChatDialog dialog, String message);
 
     void getError(Exception e);
 }

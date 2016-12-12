@@ -11,23 +11,22 @@ import android.support.v7.app.NotificationCompat;
 
 import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
+import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.chat.utils.qb.QbDialogUtils;
 import com.kittyapplication.chat.utils.qb.callback.QBGetGroupID;
-import com.kittyapplication.core.utils.NotificationUtils;
 import com.kittyapplication.model.CreateGroup;
 import com.kittyapplication.model.OfflineDao;
 import com.kittyapplication.model.ServerResponse;
 import com.kittyapplication.rest.Singleton;
 import com.kittyapplication.sqlitedb.SqlDataSetTask;
-import com.kittyapplication.ui.activity.HomeActivity;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.PreferanceUtils;
 import com.kittyapplication.utils.Utils;
 import com.quickblox.chat.QBGroupChat;
 import com.quickblox.chat.QBGroupChatManager;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 
@@ -52,9 +51,8 @@ public class CreateGroupIntentService extends IntentService {
     private NotificationManager mNotifyManager;
     private CreateGroup mGroup;
     private int mNotificationId = 1;
-    private QBDialog mDialog;
+    private QBChatDialog mDialog;
     private String mMessage;
-    private QBGroupChatManager mQbChatManger;
 
     public CreateGroupIntentService() {
         super("CreateGroupIntentService");
@@ -106,26 +104,23 @@ public class CreateGroupIntentService extends IntentService {
     /**
      * send empty message in group
      *
-     * @param roomID
      * @param message
-     * @param groupChatManager
      */
-    private void sendMessage(String roomID, String message, QBGroupChatManager groupChatManager) {
+    private void sendMessage(final QBChatDialog dialog, String message) {
         // TODO Join group and send message
         DiscussionHistory history = new DiscussionHistory();
         history.setMaxStanzas(0);
 
-        final QBGroupChat currentChatRoom = groupChatManager.
-                createGroupChat(roomID);
         final String finalMessage = message;
-        currentChatRoom.join(history, new QBEntityCallback() {
+
+        ChatHelper.getInstance().join(dialog, new QBEntityCallback<Void>() {
             @Override
-            public void onSuccess(Object o, Bundle bundle) {
+            public void onSuccess(Void aVoid, Bundle bundle) {
                 QBChatMessage chatMessage = new QBChatMessage();
                 chatMessage.setBody(finalMessage);
                 chatMessage.setProperty("save_to_history", "1"); // Save to Chat 2.0 history
                 try {
-                    currentChatRoom.sendMessage(chatMessage);
+                    dialog.sendMessage(chatMessage);
                 } catch (SmackException.NotConnectedException | IllegalStateException e) {
                     AppLog.e(TAG, e.getMessage(), e);
                 }
@@ -134,8 +129,8 @@ public class CreateGroupIntentService extends IntentService {
             }
 
             @Override
-            public void onError(QBResponseException errors) {
-                AppLog.e(TAG, errors.getMessage(), errors);
+            public void onError(QBResponseException e) {
+
             }
         });
     }
@@ -156,13 +151,13 @@ public class CreateGroupIntentService extends IntentService {
                     mNotifyManager.cancel(mNotificationId);
 
                     // show create group success notification
-                    NotificationUtils.showNotification(mContext,
-                            HomeActivity.class,
-                            mContext.getResources().getString(R.string.app_name),
-                            mContext.getResources().getString(R.string.group_created_success_new_two, mGroup.getName()),
-                            R.drawable.ic_noti_small, (int) System.currentTimeMillis());
+//                    NotificationUtils.showNotification(mContext,
+//                            HomeActivity.class,
+//                            mContext.getResources().getString(R.string.app_name),
+//                            mContext.getResources().getString(R.string.group_created_success_new_two, mGroup.getName()),
+//                            R.drawable.ic_noti_small, (int) System.currentTimeMillis());
 
-                    sendMessage(mDialog.getRoomJid(), mMessage, mQbChatManger);
+                    sendMessage(mDialog, mMessage);
 
                 } else {
                     AppLog.d(TAG, response.body().getMessage());
@@ -233,7 +228,7 @@ public class CreateGroupIntentService extends IntentService {
                     , ""
                     , new QBGetGroupID() {
                         @Override
-                        public void getQuickBloxGroupID(QBDialog dialog, String message, QBGroupChatManager groupChatManager) {
+                        public void getQuickBloxGroupID(QBChatDialog dialog, String message) {
 
                             // create group in server
                             mGroup.setQuickGroupId(dialog.getDialogId());
@@ -245,8 +240,6 @@ public class CreateGroupIntentService extends IntentService {
 
                             mDialog = dialog;
                             mMessage = message;
-                            mQbChatManger = groupChatManager;
-
                         }
 
                         @Override

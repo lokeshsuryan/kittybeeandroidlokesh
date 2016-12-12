@@ -8,7 +8,6 @@ import com.kittyapplication.chat.R;
 import com.kittyapplication.chat.utils.SharedPreferencesUtil;
 import com.kittyapplication.chat.utils.qb.QBUserUtils;
 import com.kittyapplication.core.ui.activity.CoreBaseActivity;
-import com.quickblox.auth.QBAuth;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 import com.quickblox.users.QBUsers;
@@ -33,7 +32,7 @@ public abstract class QBSignUpSingInActivity extends CoreBaseActivity {
 
         qbUser.setLogin("0" + qbUser.getLogin());
         qbUser.setPassword(QUICK_BLOX_PASSWORD);
-        QBUsers.signUpSignInTask(qbUser, new QBEntityCallback<QBUser>() {
+        /*QBUsers.signUpSignInTask(qbUser, new QBEntityCallback<QBUser>() {
             @Override
             public void onSuccess(QBUser qbUser, Bundle bundle) {
                 qbUser.setPassword(QUICK_BLOX_PASSWORD);
@@ -54,7 +53,31 @@ public abstract class QBSignUpSingInActivity extends CoreBaseActivity {
                     }
                 });
             }
+        });*/
+
+        QBUsers.signUpSignInTask(qbUser).performAsync(new QBEntityCallback<QBUser>() {
+            @Override
+            public void onSuccess(QBUser user, Bundle args) {
+                qbUser.setPassword(QUICK_BLOX_PASSWORD);
+                SharedPreferencesUtil.saveQbUser(qbUser);
+
+                if (profilePic != null && profilePic.length() > 0)
+                    QBUserUtils.updateProfilePicture(qbUser, profilePic, null);
+                onSignUp(qbUser);
+            }
+
+            @Override
+            public void onError(QBResponseException errors) {
+                showSnackbarError(getRootView(), R.string.errors, errors, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        qbUser.setLogin(qbUser.getLogin().substring(0));
+//                        signUp(qbUser, profilePic);
+                    }
+                });
+            }
         });
+
     }
 
 
@@ -63,13 +86,33 @@ public abstract class QBSignUpSingInActivity extends CoreBaseActivity {
             return;
         }
 
-        QBUser qbUser = new QBUser();
+        final QBUser qbUser = new QBUser();
         qbUser.setLogin(login);
         qbUser.setPassword(QUICK_BLOX_PASSWORD);
 
-        QBUsers.signIn(qbUser, new QBEntityCallback<QBUser>() {
+        /*QBUsers.signIn(qbUser, new QBEntityCallback<QBUser>() {
             @Override
             public void onSuccess(QBUser qbUser, Bundle bundle) {
+                qbUser.setPassword(QUICK_BLOX_PASSWORD);
+                SharedPreferencesUtil.saveQbUser(qbUser);
+                onSignIn(qbUser);
+            }
+
+            @Override
+            public void onError(QBResponseException errors) {
+                showSnackbarError(getRootView(), R.string.errors, errors, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        signIn(login);
+                    }
+                });
+            }
+        });*/
+
+        QBUsers.signIn(qbUser).performAsync(new QBEntityCallback<QBUser>() {
+
+            @Override
+            public void onSuccess(QBUser user, Bundle params) {
                 qbUser.setPassword(QUICK_BLOX_PASSWORD);
                 SharedPreferencesUtil.saveQbUser(qbUser);
                 onSignIn(qbUser);
@@ -88,8 +131,13 @@ public abstract class QBSignUpSingInActivity extends CoreBaseActivity {
     }
 
     public void logout() {
+//        try {
+//            QBUsers.signOut();
+//        } catch (QBResponseException e) {
+//            e.printStackTrace();
+//        }
         try {
-            QBUsers.signOut();
+            QBUsers.signOut().perform();
         } catch (QBResponseException e) {
             e.printStackTrace();
         }

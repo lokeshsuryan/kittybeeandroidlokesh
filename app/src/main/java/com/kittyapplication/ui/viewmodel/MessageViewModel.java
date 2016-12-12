@@ -8,22 +8,17 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.kittyapplication.chat.ui.models.QBMessage;
-import com.kittyapplication.model.ChatData;
-import com.kittyapplication.model.Kitty;
 import com.kittyapplication.providers.KittyBeeContract;
 import com.kittyapplication.sqlitedb.DBQueryHandler;
 import com.kittyapplication.sqlitedb.DBQueryHandler.OnQueryHandlerListener;
 import com.kittyapplication.sqlitedb.MySQLiteHelper;
 import com.kittyapplication.sqlitedb.SQLConstants;
 import com.kittyapplication.ui.executor.BackgroundExecutorThread;
-import com.kittyapplication.ui.executor.ExecutorThread;
 import com.kittyapplication.ui.executor.Interactor;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +33,7 @@ public class MessageViewModel extends ChatMemberViewModel {
     private static final String TAG = MessageViewModel.class.getSimpleName();
     private Context context;
     private List<Integer> insertedIds;
+    private static final int PAGE_LIMIT = 50;
 
     public MessageViewModel(Context context) {
         super(context);
@@ -48,6 +44,7 @@ public class MessageViewModel extends ChatMemberViewModel {
     public void saveMessages(ArrayList<QBMessage> messages, int kittyId) {
         for (QBMessage message : messages) {
             saveMessage(message, kittyId);
+//            context.getContentResolver().bulkInsert()
         }
     }
 
@@ -88,6 +85,8 @@ public class MessageViewModel extends ChatMemberViewModel {
             ContentValues values = new ContentValues();
             values.put(KittyBeeContract.ChatMessage.KITTY_ID, kittyId);
             values.put(KittyBeeContract.ChatMessage.SENT, message.getSent());
+            values.put(KittyBeeContract.ChatMessage.DELIVERED, message.getDelivered());
+            values.put(KittyBeeContract.ChatMessage.READ, message.getRead());
             values.put(KittyBeeContract.ChatMessage.MESSAGE_ID, chatMessage.getId());
             values.put(KittyBeeContract.ChatMessage.DATA, new Gson().toJson(chatMessage));
             values.put(KittyBeeContract.ChatMessage.TIMESTAMP, chatMessage.getDateSent());
@@ -100,21 +99,35 @@ public class MessageViewModel extends ChatMemberViewModel {
                 }
             };
             queryHandler.startInsert(0, 0, KittyBeeContract.ChatMessage.CONTENT_URI, values);
-
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
     }
 
-    public void loadMessages(int kittyId, int offset, int limit, final OnQueryHandlerListener listener) {
+    public void loadMessages(int kittyId, int offset, final OnQueryHandlerListener listener) {
+        String selection = KittyBeeContract.ChatMessage.KITTY_ID + " =? AND "
+                + KittyBeeContract.ChatMessage.DELETED + " =?";
+        String[] selectionArg = new String[]{"" + kittyId, "0"};
+
+        loadMessages(kittyId, offset, PAGE_LIMIT, selection, selectionArg, listener);
+    }
+
+    public void getUnreadMessages(int kittyId, int offset, final OnQueryHandlerListener listener) {
+        String selection = KittyBeeContract.ChatMessage.KITTY_ID + " =? AND " +
+                KittyBeeContract.ChatMessage.DELETED + " =? AND " +
+                KittyBeeContract.ChatMessage.READ + " =?";
+        String[] selectionArg = new String[]{"" + kittyId, "0", "0"};
+
+        loadMessages(kittyId, offset, PAGE_LIMIT, selection, selectionArg, listener);
+    }
+
+    private void loadMessages(int kittyId, int offset, int limit, String selection, String[] selectionArg, final OnQueryHandlerListener listener) {
         System.out.println("loadMessages dialogId::" + kittyId);
         Uri uri = getQueryUri();
 
-        String orderBy = KittyBeeContract.ChatMessage.TIMESTAMP + " ASC LIMIT " + offset + "," + limit;
-        String selection = KittyBeeContract.ChatMessage.KITTY_ID + " =? AND "
-                + KittyBeeContract.ChatMessage.DELETED + " =?";
-
-        String[] selectionArg = new String[]{"" + kittyId, "0"};
+        String orderBy = KittyBeeContract.Kitties.TIMESTAMP + " DESC ";
+        if (limit > 0)
+            orderBy += "LIMIT " + offset + ", " + limit;
 
         ContentResolver resolver = context.getContentResolver();
         final Cursor cursor = resolver.query(uri,                      // the URI to query
@@ -146,12 +159,14 @@ public class MessageViewModel extends ChatMemberViewModel {
 
                     }
                 } catch (Exception e) {
+                    cursor.close();
                     AppLog.e(TAG, e.getMessage(), e);
                 }
             }
         }, new Interactor.OnExecutionFinishListener() {
             @Override
             public void onFinish() {
+                cursor.close();
                 listener.onResult(messageList);
             }
         });
@@ -217,7 +232,7 @@ public class MessageViewModel extends ChatMemberViewModel {
     }
 
     public void clearHistory(int kittyId) {
-        deleteMessage(KittyBeeContract.ChatMessage.KITTY_ID + "=?", new String[]{""+kittyId});
+        deleteMessage(KittyBeeContract.ChatMessage.KITTY_ID + "=?", new String[]{"" + kittyId});
     }
 
     public void deleteByChatId(String chatId) {
@@ -309,7 +324,21 @@ public class MessageViewModel extends ChatMemberViewModel {
 
     public void updateMessage(QBChatMessage message) {
         try {
-            int messageId = Integer.parseInt((String) message.getProperty(AppConstant.LAST_INSERTED_ID));
+            int messageId = Integer.parseInt((String)
+                    message.getProperty(AppConstant.LAST_INSERTED_ID));
+            ContentValues values = new ContentValues();
+            values.put(KittyBeeContract.ChatMessage.MESSAGE_ID, message.getId());
+            values.put(KittyBeeContract.ChatMessage.DATA, new Gson().toJson(message));
+            updateMessage(values, messageId);
+        } catch (Exception e) {
+            AppLog.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public void updateMessage(QBChatMessage message, int lst) {
+        try {
+            int messageId = Integer.parseInt((String)
+                    message.getProperty(AppConstant.LAST_INSERTED_ID));
             ContentValues values = new ContentValues();
             values.put(KittyBeeContract.ChatMessage.MESSAGE_ID, message.getId());
             values.put(KittyBeeContract.ChatMessage.DATA, new Gson().toJson(message));
@@ -339,7 +368,7 @@ public class MessageViewModel extends ChatMemberViewModel {
         }
     }
 
-    private void updateMessage(final ContentValues values, final String selection, final String[] selectionArg){
+    private void updateMessage(final ContentValues values, final String selection, final String[] selectionArg) {
         try {
             ContentResolver resolver = context.getContentResolver();
             resolver.update(KittyBeeContract.ChatMessage.CONTENT_URI, values, selection, selectionArg);
@@ -366,7 +395,7 @@ public class MessageViewModel extends ChatMemberViewModel {
             ContentValues values = new ContentValues();
             values.put(KittyBeeContract.ChatMessage.DELETED, 1);
             String where = KittyBeeContract.ChatMessage.KITTY_ID + "=?";
-            String[] selectionArg = new String[]{""+kittyId};
+            String[] selectionArg = new String[]{"" + kittyId};
 
             DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
             queryHandler.startUpdate(0, 0, KittyBeeContract.ChatMessage.CONTENT_URI, values, where, selectionArg);
@@ -455,12 +484,19 @@ public class MessageViewModel extends ChatMemberViewModel {
     public void loadPendingMessages(final OnQueryHandlerListener listener) {
         Uri uri = getQueryUri();
 
+        String selection = KittyBeeContract.ChatMessage.SENT + " =? AND " +
+                KittyBeeContract.ChatMessage.DELETED + " =?";
+        String[] selectionArg = new String[]{"0", "0"};
+
+        String orderBy = KittyBeeContract.Kitties.TIMESTAMP + " DESC ";
+        orderBy += "LIMIT 0, " + PAGE_LIMIT;
+
         ContentResolver resolver = context.getContentResolver();
         final Cursor cursor = resolver.query(uri,                      // the URI to query
                 KittyBeeContract.ChatMessage.PROJECTION_ALL,   // the projection to use
-                "deleted = 0",                           // the where clause without the WHERE keyword
-                null,                           // any wildcard substitutions
-                null);
+                selection,                           // the where clause without the WHERE keyword
+                selectionArg,                           // any wildcard substitutions
+                orderBy);
 
         final ArrayList<QBChatMessage> messageList = new ArrayList<>();
         BackgroundExecutorThread backgroundExecutorThread = new BackgroundExecutorThread();

@@ -12,15 +12,19 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 
+import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
 import com.kittyapplication.adapter.HomeViewTabAdapter;
+import com.kittyapplication.core.gcm.GooglePlayServicesHelper;
 import com.kittyapplication.custom.MiddleOfKittyListener;
 import com.kittyapplication.model.BannerDao;
 import com.kittyapplication.model.BannerData;
+import com.kittyapplication.model.RegisterResponseDao;
 import com.kittyapplication.model.ServerResponse;
 import com.kittyapplication.rest.Singleton;
 import com.kittyapplication.services.OfflineSupportIntentService;
 import com.kittyapplication.ui.activity.HomeActivity;
+import com.kittyapplication.ui.fragment.BaseFragment;
 import com.kittyapplication.ui.fragment.BeeChatFragment;
 import com.kittyapplication.ui.fragment.ContactsFragment;
 import com.kittyapplication.ui.fragment.KittiesFragment;
@@ -29,9 +33,11 @@ import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.PreferanceUtils;
 import com.kittyapplication.utils.Utils;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import retrofit2.Call;
@@ -77,6 +83,7 @@ public class HomeViewModel implements ViewPager.OnPageChangeListener {
         }
 
         getUpdateVersion();
+        checkGCMidTask();
     }
 
     /**
@@ -112,8 +119,10 @@ public class HomeViewModel implements ViewPager.OnPageChangeListener {
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        if (mActivity != null && mActivity.getSearchbar() != null)
+        if (mActivity != null && mActivity.getSearchbar() != null) {
             mActivity.getSearchbar().closeSearch();
+            reloadData();
+        }
     }
 
     @Override
@@ -162,10 +171,10 @@ public class HomeViewModel implements ViewPager.OnPageChangeListener {
 //        }
 //    }
 
-    public void updatedDialog(QBDialog qbDialog) {
+    public void updatedDialog(QBChatDialog qbDialog, int index) {
         try {
             BeeChatFragment fragment = (BeeChatFragment) mAdapter.getRegisteredFragment(1);
-            fragment.updatedDialog(qbDialog);
+            fragment.updatedDialog(qbDialog, index);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
@@ -190,16 +199,17 @@ public class HomeViewModel implements ViewPager.OnPageChangeListener {
 
     public void filterData(String searchString) {
         try {
-            if (getCurrentPagePosition() == 0) {
-                KittiesFragment fragment = (KittiesFragment) mAdapter.getRegisteredFragment(0);
-                fragment.applyFilter(searchString);
-            } else if (getCurrentPagePosition() == 1) {
-                BeeChatFragment fragment = (BeeChatFragment) mAdapter.getRegisteredFragment(1);
-                fragment.applyFilter(searchString);
-            } else {
-                ContactsFragment fragment = (ContactsFragment) mAdapter.getRegisteredFragment(2);
-                fragment.applyFilter(searchString);
-            }
+            BaseFragment fragment = (BaseFragment) mAdapter.getRegisteredFragment(getCurrentPagePosition());
+            fragment.applyFilter(searchString);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void isFilterApply(boolean isFilterApply) {
+        try {
+            BaseFragment fragment = (BaseFragment) mAdapter.getRegisteredFragment(getCurrentPagePosition());
+            fragment.setFilter(isFilterApply);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -266,11 +276,16 @@ public class HomeViewModel implements ViewPager.OnPageChangeListener {
 
     private void showDialogTask(String version) {
         try {
-            Float updateVersion = Float.valueOf(version);
+            BigDecimal updateVersion = new BigDecimal(version);
+//            double updateVersion = Double.valueOf(version);
             PackageManager manager = mActivity.getPackageManager();
             final PackageInfo info = manager.getPackageInfo(mActivity.getPackageName(), 0);
-            Float currentVersion = Float.valueOf(info.versionName);
-            if (currentVersion < updateVersion) {
+            DecimalFormat df = new DecimalFormat("#.##");
+//            double currentVersion = Double.parseDouble(info.versionName);
+            BigDecimal currentVersion = new BigDecimal(info.versionName);
+            currentVersion.movePointRight(3);
+            AppLog.d(TAG, "Versions " + currentVersion.floatValue() + "==" + updateVersion.floatValue());
+            if (currentVersion.floatValue() < updateVersion.floatValue()) {
                 AlertDialogUtils.showYesNoAlert(mActivity,
                         mActivity.getResources().getString(R.string.update_version_string)
                         , new MiddleOfKittyListener() {
@@ -299,6 +314,49 @@ public class HomeViewModel implements ViewPager.OnPageChangeListener {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void reloadData() {
+        BaseFragment fragment = (BaseFragment) mAdapter.getRegisteredFragment(getCurrentPagePosition());
+        fragment.reloadData();
+    }
+
+    private void checkGCMidTask() {
+        final GooglePlayServicesHelper helper = new GooglePlayServicesHelper();
+        String gcmID = helper.getGcmRegIdFromPreferences();
+        RegisterResponseDao loginUser = PreferanceUtils.getLoginUserObject(mActivity);
+//        if (!Utils.isValidString(gcmID)) {
+        if (!PreferanceUtils.hasDeviceID(mActivity)) {
+
+            if (Utils.checkInternetConnection(mActivity)) {
+
+                if (Utils.isValidString(AppApplication.getGCMId())) {
+
+                    Call<ServerResponse> call = Singleton.getInstance()
+                            .getRestOkClient().updateGCM(loginUser.getUserID(),
+                                    AppApplication.getGCMId(),
+                                    mActivity.getResources().getString(R.string.device_type_android));
+                    call.enqueue(new Callback<ServerResponse>() {
+                        @Override
+                        public void onResponse(Call<ServerResponse> call,
+                                               Response<ServerResponse> response) {
+                            try {
+                                PreferanceUtils.setDeviceID(mActivity, true);
+                                helper.saveGcmRegIdToPreferences(AppApplication.getGCMId());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ServerResponse> call,
+                                              Throwable t) {
+
+                        }
+                    });
+                }
+            }
         }
     }
 }

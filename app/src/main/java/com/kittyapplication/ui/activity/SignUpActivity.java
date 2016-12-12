@@ -12,11 +12,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.kittyapplication.R;
+import com.kittyapplication.chat.utils.Consts;
+import com.kittyapplication.core.gcm.GooglePlayServicesHelper;
 import com.kittyapplication.model.RegisterResponseDao;
-import com.kittyapplication.services.GCMRegistrationService;
 import com.kittyapplication.ui.view.SignUpView;
 import com.kittyapplication.ui.viewmodel.SignUpViewModel;
 import com.kittyapplication.utils.AlertDialogUtils;
@@ -100,7 +99,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     public void registerGCM() {
-        //Checking play service is available or not
+       /* //Checking play service is available or not
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
         int result = googleAPI.isGooglePlayServicesAvailable(this);
         if (ConnectionResult.SUCCESS != result) {
@@ -115,6 +114,11 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         } else {
             Intent intent = new Intent(this, GCMRegistrationService.class);
             startService(intent);
+        }*/
+
+        GooglePlayServicesHelper helper = new GooglePlayServicesHelper();
+        if (helper.checkPlayServicesAvailable()) {
+            helper.registerForGcm(Consts.GCM_SENDER_ID);
         }
     }
 }

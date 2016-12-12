@@ -25,8 +25,6 @@ import android.widget.TextView;
 
 import com.kittyapplication.R;
 import com.kittyapplication.chat.ui.activity.QBSignUpSingInActivity;
-import com.kittyapplication.chat.utils.chat.ChatHelper;
-import com.kittyapplication.chat.utils.qb.QbDialogHolder;
 import com.kittyapplication.model.RegisterResponseDao;
 import com.kittyapplication.services.IncomingSmsReceiver;
 import com.kittyapplication.ui.view.SignUpView;
@@ -35,13 +33,7 @@ import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.ImageUtils;
 import com.kittyapplication.utils.Utils;
-import com.quickblox.chat.model.QBDialog;
-import com.quickblox.core.QBEntityCallback;
-import com.quickblox.core.exception.QBResponseException;
-import com.quickblox.core.request.QBRequestGetBuilder;
 import com.quickblox.users.model.QBUser;
-
-import java.util.ArrayList;
 
 /**
  * Created by Dhaval Riontech on 7/8/16.
@@ -99,9 +91,11 @@ public class OTPActivity extends QBSignUpSingInActivity implements SignUpView, V
     @Override
     public void onSignIn(QBUser qbUser) {
         super.onSignIn(qbUser);
-
-        // TODO Get data from quick blox and store it
-        loadDialogsFromQb();
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        startActivity(intent);
+        finish();
     }
 
     @Override
@@ -111,12 +105,6 @@ public class OTPActivity extends QBSignUpSingInActivity implements SignUpView, V
 
     @Override
     public void gotoNextPage(String message, String mobile) {
-        /*Intent intent = new Intent(OTPActivity.this, RegistrationActivity.class);
-        intent.putExtra(AppConstant.MOBILE, mMobileNumber);
-        startActivity(intent);
-        finish();*/
-
-
         Intent intent = new Intent(this, RegistrationActivity.class);
         intent.putExtra(AppConstant.MOBILE, mMobileNumber);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -127,20 +115,11 @@ public class OTPActivity extends QBSignUpSingInActivity implements SignUpView, V
 
     @Override
     public void gotoHomePage(RegisterResponseDao dao) {
-        //START OFFLINE SERVICE
-//        startService(new Intent(this, OfflineSupportIntentService.class));
-
-     /*   startActivity(new Intent(this, HomeActivity.class));
-        finish();
-*/
-
-
         Intent intent = new Intent(this, HomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
         finish();
-//        hideProgressDialog();
     }
 
     @Override
@@ -280,58 +259,4 @@ public class OTPActivity extends QBSignUpSingInActivity implements SignUpView, V
     public void enableDisableLoginButton(boolean enable) {
         findViewById(R.id.btnLogin).setEnabled(enable);
     }
-
-    /**
-     *
-     */
-    private void loadDialogsFromQb() {
-        WorkerThread mQbDialogWorkerThread = new WorkerThread("myWorkerThread");
-        mQbDialogWorkerThread.start();
-        mQbDialogWorkerThread.prepareHandler();
-        mQbDialogWorkerThread.postTask(task);
-    }
-
-    /**
-     *
-     */
-    private class WorkerThread extends HandlerThread {
-        private Handler mWorkerHandler;
-
-        public WorkerThread(String name) {
-            super(name);
-        }
-
-        public void postTask(Runnable task) {
-            mWorkerHandler.post(task);
-        }
-
-        public void prepareHandler() {
-            mWorkerHandler = new Handler(getLooper());
-        }
-
-    }
-
-    /**
-     *
-     */
-    Runnable task = new Runnable() {
-        @Override
-        public void run() {
-            ChatHelper.getInstance().getDialogs(new QBRequestGetBuilder(), new QBEntityCallback<ArrayList<QBDialog>>() {
-                @Override
-                public void onSuccess(ArrayList<QBDialog> dialogs, Bundle bundle) {
-                    QbDialogHolder.getInstance().addDialogs(dialogs);
-
-                    startActivity(new Intent(OTPActivity.this, HomeActivity.class));
-                    finish();
-                }
-
-                @Override
-                public void onError(QBResponseException e) {
-                    startActivity(new Intent(OTPActivity.this, HomeActivity.class));
-                    finish();
-                }
-            }, 0);
-        }
-    };
 }

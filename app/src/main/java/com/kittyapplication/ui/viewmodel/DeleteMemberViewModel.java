@@ -21,6 +21,7 @@ import com.kittyapplication.utils.AlertDialogUtils;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.Utils;
+import com.quickblox.chat.model.QBChatDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,7 +129,7 @@ public class DeleteMemberViewModel {
                         null, new QbUpdateDialogListener() {
 
                             @Override
-                            public void onSuccessResponce() {
+                            public void onSuccessResponse(QBChatDialog dialog)  {
                                 AppApplication.getInstance().setRefresh(true);
                                 ReqDeleteMember deleteMemeber = new ReqDeleteMember();
                                 deleteMemeber.setGroupId(groupId);

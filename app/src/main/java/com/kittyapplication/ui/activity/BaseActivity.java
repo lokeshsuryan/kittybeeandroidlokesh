@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
@@ -20,6 +21,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -45,7 +47,8 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
  * Created by Pintu Riontech on 6/8/16.
  * vaghela.pintu31@gmail.com
  */
-public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener {
+public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener,
+        NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = BaseActivity.class.getSimpleName();
 
     private ProgressDialog mDialog;
@@ -93,9 +96,13 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 
     private void initView() {
         try {
+
+            mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
             mViewModel = new BaseViewModel(this);
-            mRootLayout = (CoordinatorLayout) findViewById(R.id.main_content);
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarHome);
+
+            mRootLayout = (CoordinatorLayout) mDrawerLayout.findViewById(R.id.main_content);
+            mRlContainer = (RelativeLayout) mDrawerLayout.findViewById(R.id.rlContainer);
+            Toolbar toolbar = (Toolbar) mDrawerLayout.findViewById(R.id.toolbarHome);
             setActionBar(toolbar);
             mAppBarLayout = (AppBarLayout) findViewById(R.id.appBarHome);
             TextView txtToolbarTitle = (TextView) mAppBarLayout.findViewById(R.id.txtToolbarTitleHome);
@@ -105,16 +112,16 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
             mImgNotification = (ImageView) mAppBarLayout.findViewById(R.id.imgNotification);
             mImgProfile = (ImageView) mAppBarLayout.findViewById(R.id.imgProfile);
 
-            mProgress = (ProgressBar) findViewById(R.id.progressCenter);
-            mImgDrawerUserImage = (ImageView) findViewById(R.id.imgDrawerUserIcon);
-            mTxtDrawerUserName = (TextView) findViewById(R.id.txtDrawerUserName);
 
-            mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-            mRlContainer = (RelativeLayout) findViewById(R.id.rlContainer);
+            final NavigationView navigationView = (NavigationView)
+                    mDrawerLayout.findViewById(R.id.nav_view);
+            View view = navigationView.getHeaderView(0);
 
+            mProgress = (ProgressBar) view.findViewById(R.id.progressCenter);
+            mImgDrawerUserImage = (ImageView) view.findViewById(R.id.imgDrawerUserIcon);
+            mTxtDrawerUserName = (TextView) view.findViewById(R.id.txtDrawerUserName);
+            navigationView.setNavigationItemSelectedListener(this);
 
-            NavigationView navigationView = (NavigationView)
-                    mDrawerLayout.findViewById(R.id.nvView);
             mViewModel.setUpDrawerItem(mDrawerLayout);
 
             mRlNoInterNet = (RelativeLayout) findViewById(R.id.rlNoInternet);
@@ -451,6 +458,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                AppLog.e(TAG, "onQueryTextSubmit");
                 listener.getSearchString(query);
                 return false;
             }
@@ -468,7 +476,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                 mSearchbar.setVisibility(View.VISIBLE);
                 mAppBarLayout.setVisibility(View.GONE);
                 listener.onSearchBarVisible();
-
+                AppLog.e(TAG, "onSearchViewShown");
                 //Do some magic
             }
 
@@ -478,6 +486,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                 mSearchbar.setVisibility(View.GONE);
                 mAppBarLayout.setVisibility(View.VISIBLE);
                 listener.onSearchBarHide();
+                AppLog.e(TAG, "onSearchViewClosed");
             }
         });
     }
@@ -495,5 +504,50 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         } catch (Exception e) {
 
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.menu_drawer_home:
+                mViewModel.onDrawerItemClickEvent(0);
+                break;
+
+            case R.id.menu_drawer_my_profile:
+                mViewModel.onDrawerItemClickEvent(1);
+                break;
+
+            case R.id.menu_drawer_notification:
+                mViewModel.onDrawerItemClickEvent(2);
+                break;
+
+            case R.id.menu_drawer_add_group:
+                mViewModel.onDrawerItemClickEvent(3);
+                break;
+
+            case R.id.menu_drawer_my_kitty:
+                mViewModel.onDrawerItemClickEvent(4);
+                break;
+
+            case R.id.menu_drawer_kitty_manager:
+                mViewModel.onDrawerItemClickEvent(5);
+                break;
+
+            case R.id.menu_drawer_personal_notes:
+                mViewModel.onDrawerItemClickEvent(6);
+                break;
+
+            case R.id.menu_drawer_contact_us:
+                mViewModel.onDrawerItemClickEvent(7);
+                break;
+
+            case R.id.menu_drawer_about_us:
+                mViewModel.onDrawerItemClickEvent(8);
+                break;
+        }
+
+        mDrawerLayout.closeDrawer(GravityCompat.START);
+        return true;
     }
 }

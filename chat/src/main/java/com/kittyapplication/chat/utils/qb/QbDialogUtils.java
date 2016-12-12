@@ -10,19 +10,21 @@ import com.kittyapplication.chat.utils.chat.QbUpdateDialogListener;
 import com.kittyapplication.chat.utils.qb.callback.QBGetGroupID;
 import com.quickblox.chat.QBChatService;
 import com.quickblox.chat.QBGroupChatManager;
+import com.quickblox.chat.QBRestChatService;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
 import com.quickblox.chat.model.QBDialogType;
 import com.quickblox.chat.request.QBDialogRequestBuilder;
+import com.quickblox.chat.utils.DialogUtils;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 import com.quickblox.core.helper.StringifyArrayList;
 import com.quickblox.core.request.QBRequestUpdateBuilder;
-import com.quickblox.users.QBUsers;
 import com.quickblox.users.model.QBUser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -31,11 +33,11 @@ import java.util.Map;
 public class QbDialogUtils {
     private static final String TAG = QbDialogUtils.class.getSimpleName();
 
-    public static QBDialog createDialog(List<QBUser> users) {
+    public static QBChatDialog createDialog(List<QBUser> users) {
         QBUser currentUser = ChatHelper.getCurrentUser();
         users.remove(currentUser);
 
-        QBDialog dialogToCreate = new QBDialog();
+        QBChatDialog dialogToCreate = new QBChatDialog();
         dialogToCreate.setName(QbDialogUtils.createChatNameFromUserList(users));
         if (users.size() == 1) {
             dialogToCreate.setType(QBDialogType.PRIVATE);
@@ -48,7 +50,7 @@ public class QbDialogUtils {
         return dialogToCreate;
     }
 
-    public static List<QBUser> getAddedUsers(QBDialog dialog,
+    public static List<QBUser> getAddedUsers(QBChatDialog dialog,
                                              List<QBUser> currentUsers) {
         return getAddedUsers(getQbUsersFromQbDialog(dialog), currentUsers);
     }
@@ -74,7 +76,7 @@ public class QbDialogUtils {
         return addedUsers;
     }
 
-    public static List<QBUser> getRemovedUsers(QBDialog dialog, List<QBUser> currentUsers) {
+    public static List<QBUser> getRemovedUsers(QBChatDialog dialog, List<QBUser> currentUsers) {
         return getRemovedUsers(getQbUsersFromQbDialog(dialog), currentUsers);
     }
 
@@ -99,7 +101,7 @@ public class QbDialogUtils {
         return removedUsers;
     }
 
-    public static void logDialogUsers(QBDialog qbDialog) {
+    public static void logDialogUsers(QBChatDialog qbDialog) {
         Log.v(TAG, "Dialog " + getDialogName(qbDialog));
         logUsersByIds(qbDialog.getOccupants());
     }
@@ -117,7 +119,7 @@ public class QbDialogUtils {
         }
     }
 
-    public static Integer getOpponentIdForPrivateDialog(QBDialog dialog) {
+    public static Integer getOpponentIdForPrivateDialog(QBChatDialog dialog) {
         Integer opponentId = -1;
         QBUser qbUser = ChatHelper.getCurrentUser();
         if (qbUser == null) {
@@ -158,7 +160,7 @@ public class QbDialogUtils {
         return chatName;
     }
 
-    public static String getDialogName(QBDialog dialog) {
+    public static String getDialogName(QBChatDialog dialog) {
         if (dialog.getType().equals(QBDialogType.GROUP)) {
             return dialog.getName();
         } else {
@@ -173,7 +175,7 @@ public class QbDialogUtils {
         }
     }
 
-    public static List<QBUser> getQbUsersFromQbDialog(QBDialog dialog) {
+    public static List<QBUser> getQbUsersFromQbDialog(QBChatDialog dialog) {
         List<QBUser> previousDialogUsers = new ArrayList<>();
         for (Integer id : dialog.getOccupants()) {
             QBUser user = QbUsersHolder.getInstance().getUserById(id);
@@ -188,7 +190,7 @@ public class QbDialogUtils {
     }
 
     public static void getQbUserById(List<String> ids) {
-        final List<QBUser> qbUserList = new ArrayList<>();
+        /*final List<QBUser> qbUserList = new ArrayList<>();
         for (int i = 0; i < ids.size(); i++) {
             QBUsers.getUser(Integer.parseInt(ids.get(i)), new QBEntityCallback<QBUser>() {
                 @Override
@@ -201,7 +203,7 @@ public class QbDialogUtils {
                     Log.d(TAG, "onError: " + e.getMessage());
                 }
             });
-        }
+        }*/
         //createDialog(qbUserList);
     }
 
@@ -225,55 +227,68 @@ public class QbDialogUtils {
             Log.e(TAG, e.getMessage());
         }
 
-        QBDialog dialog = new QBDialog();
+        QBChatDialog dialog = new QBChatDialog();
         dialog.setName(groupName);
         dialog.setPhoto(photoData);
         dialog.setType(QBDialogType.GROUP);
         dialog.setOccupantsIds(occupantIdsList);
+        final String finalUsers = users;
 
-        final QBGroupChatManager groupChatManager = QBChatService.getInstance().getGroupChatManager();
-
-        if (groupChatManager != null) {
-            final String finalUsers = users;
-            groupChatManager.createDialog(dialog, new QBEntityCallback<QBDialog>() {
-                @Override
-                public void onSuccess(final QBDialog dialog, Bundle args) {
-                    Log.d(TAG, "Created dialog =>" + dialog);
-                    String message = "";
-                    if (finalUsers.length() > 2) {
-                        message = SharedPreferencesUtil.getQbUser().getFullName()
-                                + " created new group with: " +
-                                finalUsers.substring(0, finalUsers.length() - 2);
-                    } else {
-                        message = SharedPreferencesUtil.getQbUser().getFullName()
-                                + " created new group.";
-                    }
-                    dialog.setLastMessage(message);
-                    dialog.setLastMessageDateSent(System.currentTimeMillis() / 1000);
-
-                    QbDialogHolder.getInstance().addDialogToList(dialog, 0);
-                    listener.getQuickBloxGroupID(dialog, message, groupChatManager);
+        ChatHelper.getInstance().createDialog(dialog, new QBEntityCallback<QBChatDialog>() {
+            @Override
+            public void onSuccess(QBChatDialog dialog, Bundle bundle) {
+                String message = "";
+                if (finalUsers.length() > 2) {
+                    message = SharedPreferencesUtil.getQbUser().getFullName()
+                            + " created new group with: " +
+                            finalUsers.substring(0, finalUsers.length() - 2);
+                } else {
+                    message = SharedPreferencesUtil.getQbUser().getFullName()
+                            + " created new group.";
                 }
+                dialog.setLastMessage(message);
+                dialog.setLastMessageDateSent(System.currentTimeMillis() / 1000);
 
-                @Override
-                public void onError(QBResponseException errors) {
-                    listener.getError(errors);
-                }
-            });
-        } else {
-            Log.e(TAG, "NULL login user is null");
-            ChatHelper.getInstance().login(SharedPreferencesUtil.getQbUser(), new QBEntityCallback<Void>() {
-                @Override
-                public void onSuccess(Void aVoid, Bundle bundle) {
-                    createGroupChatDialog(map, groupName, photoData, listener);
-                }
+                QbDialogHolder.getInstance().addDialogToList(dialog, 0);
+                listener.getQuickBloxGroupID(dialog, message);
+            }
 
-                @Override
-                public void onError(QBResponseException e) {
-                    listener.getError(null);
-                }
-            });
-        }
+            @Override
+            public void onError(QBResponseException e) {
+                listener.getError(e);
+            }
+        });
+
+//        final QBGroupChatManager groupChatManager = QBChatService.getInstance().getGroupChatManager();
+//
+//        if (groupChatManager != null) {
+//
+//            groupChatManager.createDialog(dialog, new QBEntityCallback<QBChatDialog>() {
+//                @Override
+//                public void onSuccess(final QBChatDialog dialog, Bundle args) {
+//                    Log.d(TAG, "Created dialog =>" + dialog);
+//
+//                }
+//
+//                @Override
+//                public void onError(QBResponseException errors) {
+//                    listener.getError(errors);
+//                }
+//            });
+//        } else {
+//            Log.e(TAG, "NULL login user is null");
+//            ChatHelper.getInstance().login(SharedPreferencesUtil.getQbUser(), new QBEntityCallback<Void>() {
+//                @Override
+//                public void onSuccess(Void aVoid, Bundle bundle) {
+//                    createGroupChatDialog(map, groupName, photoData, listener);
+//                }
+//
+//                @Override
+//                public void onError(QBResponseException e) {
+//                    listener.getError(null);
+//                }
+//            });
+//        }
     }
 
 
@@ -290,7 +305,7 @@ public class QbDialogUtils {
 
 
         QBDialogRequestBuilder requestBuilder = new QBDialogRequestBuilder();
-        QBDialog dialog = new QBDialog();
+        QBChatDialog dialog = new QBChatDialog();
         dialog.setDialogId(dialogId);
 
         if (type == 0) {
@@ -321,34 +336,45 @@ public class QbDialogUtils {
             dialog.setPhoto(photo);
         }
 
-        QBGroupChatManager groupChatManager = QBChatService.getInstance().getGroupChatManager();
-        if (groupChatManager != null) {
-            groupChatManager.updateDialog(dialog, requestBuilder, new QBEntityCallback<QBDialog>() {
-                @Override
-                public void onSuccess(QBDialog dialog, Bundle args) {
-                    listener.onSuccessResponce();
-                }
+        QBRestChatService.updateGroupChatDialog(dialog, requestBuilder).performAsync(new QBEntityCallback<QBChatDialog>() {
+            @Override
+            public void onSuccess(QBChatDialog dialog, Bundle bundle) {
+                listener.onSuccessResponse(dialog);
+            }
 
-                @Override
-                public void onError(QBResponseException errors) {
-                    listener.onError();
-                }
-            });
-        } else {
-            Log.e(TAG, "NULL login user is null");
-            ChatHelper.getInstance().login(SharedPreferencesUtil.getQbUser(), new QBEntityCallback<Void>() {
-                @Override
-                public void onSuccess(Void aVoid, Bundle bundle) {
-                    updateQbDialogById(dialogId, type, userList,
-                            groupName, listener, photo);
-                }
+            @Override
+            public void onError(QBResponseException e) {
 
-                @Override
-                public void onError(QBResponseException e) {
-                    listener.onError();
-                }
-            });
-        }
+            }
+        });
+//        QBGroupChatManager groupChatManager = QBChatService.getInstance().getGroupChatManager();
+//        if (groupChatManager != null) {
+//            groupChatManager.updateDialog(dialog, requestBuilder, new QBEntityCallback<QBChatDialog>() {
+//                @Override
+//                public void onSuccess(QBChatDialog dialog, Bundle args) {
+//
+//                }
+//
+//                @Override
+//                public void onError(QBResponseException errors) {
+//                    listener.onError();
+//                }
+//            });
+//        } else {
+//            Log.e(TAG, "NULL login user is null");
+//            ChatHelper.getInstance().login(SharedPreferencesUtil.getQbUser(), new QBEntityCallback<Void>() {
+//                @Override
+//                public void onSuccess(Void aVoid, Bundle bundle) {
+//                    updateQbDialogById(dialogId, type, userList,
+//                            groupName, listener, photo);
+//                }
+//
+//                @Override
+//                public void onError(QBResponseException e) {
+//                    listener.onError();
+//                }
+//            });
+//        }
 
     }
 
@@ -368,7 +394,7 @@ public class QbDialogUtils {
      * @param dialog
      * @return
      */
-    public static QBChatMessage createChatNotificationForGroupChatCreation(QBDialog dialog, String message) {
+    public static QBChatMessage createChatNotificationForGroupChatCreation(QBChatDialog dialog, String message) {
         String dialogId = String.valueOf(dialog.getDialogId());
         String roomJid = dialog.getRoomJid();
         String occupantsIds = TextUtils.join(",", dialog.getOccupants());
@@ -404,7 +430,7 @@ public class QbDialogUtils {
             groupChatManager.deleteDialogs(dialogIds, true, new QBEntityCallback<ArrayList<String>>() {
                 @Override
                 public void onSuccess(ArrayList<String> dialogIds, Bundle params) {
-                    listener.onSuccessResponce();
+//                    listener.onSuccessResponse();
                 }
 
                 @Override
@@ -419,7 +445,7 @@ public class QbDialogUtils {
 
     }
 
-    public static void updateDialog(QBDialog dialog) {
+    public static void updateDialog(QBChatDialog dialog) {
         QBGroupChatManager groupChatManager = QBChatService.getInstance().getGroupChatManager();
         QBRequestUpdateBuilder requestBuilder = new QBDialogRequestBuilder();
         try {
@@ -427,5 +453,30 @@ public class QbDialogUtils {
         } catch (QBResponseException e) {
             e.printStackTrace();
         }
+    }
+
+
+    /**
+     * Upgraded version code
+     */
+
+    public static List<Integer> getOccupantsIdsListFromString(String occupantIds) {
+        List<Integer> occupantIdsList = new ArrayList<>();
+        String[] occupantIdsArray = occupantIds.split(",");
+        for (String occupantId : occupantIdsArray) {
+            occupantIdsList.add(Integer.valueOf(occupantId));
+        }
+        return occupantIdsList;
+    }
+
+    public static String getOccupantsIdsStringFromList(Collection<Integer> occupantIdsList) {
+        return TextUtils.join(",", occupantIdsList);
+    }
+
+    public static QBChatDialog buildPrivateChatDialog(String dialogId, Integer recipientId){
+        QBChatDialog chatDialog = DialogUtils.buildPrivateDialog(recipientId);
+        chatDialog.setDialogId(dialogId);
+
+        return chatDialog;
     }
 }

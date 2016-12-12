@@ -15,6 +15,8 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +33,7 @@ import com.kittyapplication.listener.ChangeGroupNameListener;
 import com.kittyapplication.listener.ChatOptionClickListener;
 import com.kittyapplication.listener.CoupleWithListener;
 import com.kittyapplication.listener.GetImageFromListener;
+import com.kittyapplication.listener.KittyManagerListener;
 import com.kittyapplication.model.ContactDao;
 import com.kittyapplication.model.ContactDaoWithHeader;
 import com.kittyapplication.ui.activity.NotesActivity;
@@ -694,5 +697,37 @@ public class AlertDialogUtils {
             AppLog.e(TAG, e.getMessage(), e);
         }
     }
+
+    public static void showKittyManagerDialog(final Context ctx, final KittyManagerListener listener) {
+        final AlertDialog dialog = new AlertDialog.Builder(ctx).create();
+        LayoutInflater inflater = LayoutInflater.from(ctx);
+        final View alertView = inflater.inflate(R.layout.dialog_kitty_manager, null);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        dialog.setView(alertView);
+        String selectedRadio = "";
+        final RadioGroup rbManager = (RadioGroup) alertView.findViewById(R.id.rgKittyManager);
+
+
+        alertView.findViewById(R.id.alertMessageYes)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int radioButtonId = rbManager.getCheckedRadioButtonId();
+                        RadioButton radioButton = (RadioButton) rbManager.findViewById(radioButtonId);
+                        listener.getKittyManager(radioButton.getText().toString());
+                        dialog.dismiss();
+                    }
+                });
+        alertView.findViewById(R.id.alertMessageNo)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+        dialog.show();
+    }
+
 
 }

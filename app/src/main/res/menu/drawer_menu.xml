@@ -6,7 +6,7 @@
         <item
             android:id="@+id/menu_drawer_home"
             android:checked="false"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@drawable/ic_drawer_home"
             android:title="@string/home" />
 
         <item
@@ -24,7 +24,7 @@
         <item
             android:id="@+id/menu_drawer_add_group"
             android:checked="false"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@drawable/ic_action_group"
             android:title="@string/add_group" />
 
 
@@ -33,6 +33,13 @@
             android:checked="false"
             android:icon="@drawable/ic_drawer_my_kitty"
             android:title="@string/my_kitty" />
+
+        <item
+            android:id="@+id/menu_drawer_kitty_manager"
+            android:checked="false"
+            android:icon="@drawable/ic_drawer_my_kitty"
+            android:title="@string/kitty_manager" />
+
         <item
             android:id="@+id/menu_drawer_personal_notes"
             android:checked="false"
@@ -42,13 +49,13 @@
         <item
             android:id="@+id/menu_drawer_contact_us"
             android:checked="false"
-            android:icon="@drawable/ic_drawer_my_profile"
+            android:icon="@drawable/ic_drawer_contact"
             android:title="@string/contact_us" />
 
         <item
             android:id="@+id/menu_drawer_about_us"
             android:checked="false"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@drawable/ic_about_us"
             android:title="@string/about_us" />
 
     </group>

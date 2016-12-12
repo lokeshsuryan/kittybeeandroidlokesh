@@ -63,7 +63,7 @@ public class RegisterResponseDao {
     }
 
     public String getProfilePic() {
-        return profilePic;
+        return profilePic == null ? "" : profilePic;
     }
 
     public void setProfilePic(String profilePic) {

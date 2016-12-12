@@ -9,6 +9,12 @@ import java.util.Set;
  * Created by MIT on 8/19/2016.
  */
 public class StringUtils {
+    private static final String NULL_TEXT = "null";
+
+    public static boolean textIsNull(String text){
+        return NULL_TEXT.equals(text);
+    }
+
     public static void printBundle(Bundle bundle) {
         if (bundle != null) {
             Set<String> set = bundle.keySet();

@@ -3,37 +3,9 @@ package com.kittyapplication.services;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.support.v4.content.LocalBroadcastManager;
 
-import com.kittyapplication.AppApplication;
-import com.kittyapplication.chat.utils.chat.ChatHelper;
-import com.kittyapplication.chat.utils.qb.QbDialogHolder;
-import com.kittyapplication.model.ChatData;
-import com.kittyapplication.model.Kitty;
-import com.kittyapplication.model.ServerResponse;
-import com.kittyapplication.rest.Singleton;
 import com.kittyapplication.sync.SyncGroupOperation;
-import com.kittyapplication.utils.AppConstant;
-import com.kittyapplication.utils.AppLog;
-import com.kittyapplication.utils.GroupPrefHolder;
-import com.kittyapplication.utils.KittyPrefHolder;
-import com.kittyapplication.utils.PreferanceUtils;
-import com.quickblox.chat.model.QBDialog;
-import com.quickblox.chat.model.QBDialogType;
-import com.quickblox.core.QBEntityCallback;
-import com.quickblox.core.exception.QBResponseException;
-import com.quickblox.core.request.QBRequestGetBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.kittyapplication.sync.callback.DataSyncListener;
 
 /**
  * Created by HalfBloodPrince(RIONTECH)
@@ -62,12 +34,12 @@ public class KittiesIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         mContext = this;
         final SyncGroupOperation syncGroupOperation = new SyncGroupOperation();
-        syncGroupOperation.syncGroups(new SyncGroupOperation.OnSyncComplete() {
+        syncGroupOperation.syncGroups(new DataSyncListener() {
             @Override
-            public void onCompleted(boolean hasData) {
-                syncGroupOperation.syncDialogs(new SyncGroupOperation.OnSyncComplete() {
+            public void onCompleted(int itemCount) {
+                syncGroupOperation.syncDialogs(0, 0, new DataSyncListener() {
                     @Override
-                    public void onCompleted(boolean hasData) {
+                    public void onCompleted(int itemCount) {
                     }
                 });
             }

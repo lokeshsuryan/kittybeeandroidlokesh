@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2016 riontech-xten
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.kittyapplication.ui.activity;
 
 import android.Manifest;
@@ -37,47 +53,42 @@ import com.kittyapplication.chat.ui.models.QBMessage;
 import com.kittyapplication.chat.utils.Consts;
 import com.kittyapplication.chat.utils.ImageLoaderUtils;
 import com.kittyapplication.chat.utils.SharedPreferencesUtil;
-import com.kittyapplication.chat.utils.chat.Chat;
 import com.kittyapplication.chat.utils.chat.ChatHelper;
-import com.kittyapplication.chat.utils.chat.MessageStatusListener;
-import com.kittyapplication.chat.utils.chat.GroupChatImpl;
-import com.kittyapplication.chat.utils.chat.PrivateChatImpl;
-import com.kittyapplication.chat.utils.chat.QBChatMessageListener;
+import com.kittyapplication.chat.utils.chat.QbChatDialogMessageListenerImp;
 import com.kittyapplication.chat.utils.qb.FileUploadUtils;
 import com.kittyapplication.chat.utils.qb.PaginationHistoryListener;
 import com.kittyapplication.chat.utils.qb.QBUserUtils;
-import com.kittyapplication.chat.utils.qb.QbDialogUtils;
 import com.kittyapplication.chat.utils.qb.VerboseQbChatConnectionListener;
 import com.kittyapplication.chat.utils.qb.callback.OnFileUploadListener;
 import com.kittyapplication.core.async.BaseAsyncTask;
 import com.kittyapplication.core.utils.ConnectivityUtils;
 import com.kittyapplication.core.utils.ImageUtils;
 import com.kittyapplication.core.utils.ResourceUtils;
-import com.kittyapplication.core.utils.StringUtils;
 import com.kittyapplication.core.utils.Toaster;
 import com.kittyapplication.core.utils.imagepick.GetFilepathFromUriTask;
 import com.kittyapplication.core.utils.imagepick.OnImagePickedListener;
 import com.kittyapplication.model.Kitty;
 import com.kittyapplication.model.RegisterResponseDao;
 import com.kittyapplication.model.storeg.ChatGroupMember;
-import com.kittyapplication.providers.KittyBeeContract;
 import com.kittyapplication.sqlitedb.DBQueryHandler;
-import com.kittyapplication.ui.executor.BackgroundExecutorThread;
-import com.kittyapplication.ui.executor.ExecutorThread;
-import com.kittyapplication.ui.executor.Interactor;
+import com.kittyapplication.sync.ChatSyncOperation;
+import com.kittyapplication.sync.callback.DataSyncListener;
 import com.kittyapplication.ui.viewmodel.MainChatViewModel;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.PreferanceUtils;
 import com.kittyapplication.utils.Utils;
-import com.quickblox.chat.QBChat;
 import com.quickblox.chat.QBChatService;
+import com.quickblox.chat.QBMessageStatusesManager;
+import com.quickblox.chat.listeners.QBChatDialogMessageSentListener;
+import com.quickblox.chat.listeners.QBMessageStatusListener;
 import com.quickblox.chat.model.QBAttachment;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
 import com.quickblox.chat.model.QBDialogType;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
+import com.quickblox.core.request.QBPagedRequestBuilder;
 import com.quickblox.users.QBUsers;
 import com.quickblox.users.model.QBUser;
 
@@ -96,20 +107,22 @@ import java.util.Set;
 
 import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 
+import static com.kittyapplication.utils.AppConstant.EXTRA_CLICKED_ITEM_INDEX;
+
 /**
  * Created by MIT on 8/20/2016.
  */
-public class ChatActivity extends BaseActivity implements OnImagePickedListener,
-        OnFileUploadListener, MessageStatusListener {
+public class ChatActivity extends ChatBaseActivity implements OnImagePickedListener,
+        OnFileUploadListener, QBChatDialogMessageSentListener, QBMessageStatusListener {
 
-    private static final String TAG = ChatActivity.class.getSimpleName();
+    private static final String TAG = ChatActivityTemp.class.getSimpleName();
     private static final int REQUEST_CODE_SELECT_PEOPLE = 752;
     protected static final String EXTRA_QBUSER = "qbuser";
-    protected static final String EXTRA_DIALOG = "qbdialog";
     private static final String PROPERTY_SAVE_TO_HISTORY = "save_to_history";
     private static final String SENT_MESSAGE_INDEX = "sent_msg_index";
     public static final String EXTRA_MARK_READ = "markRead";
     public static final String EXTRA_KITTY_ID = "kittyId";
+    private static final String EXTRA_DIALOG = "dialog";
 
     private ProgressBar progressBar;
     private StickyListHeadersListView messagesListView;
@@ -119,26 +132,27 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
     private ChatMessageAdapter chatAdapter;
     private ConnectionListener chatConnectionListener;
 
-    private Chat chat;
-    private QBDialog qbDialog;
+    //    private Chat chat;
+    private QBChatDialog qbDialog;
     private ArrayList<String> chatMessageIds;
-    private int skipPagination = ChatHelper.CHAT_HISTORY_ITEMS_PER_PAGE;
-    private String userId, mStrData;
 
     private ArrayList<String> mediaList;
     private MainChatViewModel viewModel;
-    private MenuItem mMenuItemDiary, mMenuItemProfile, mMenuItemSetting, mMenuItemMedia, mMenuItemRules;
+    //    private MenuItem mMenuItemDiary, mMenuItemProfile, mMenuItemSetting, mMenuItemMedia, mMenuItemRules;
     private NetworkStateUpdateReceiver networkStateUpdateReceiver;
-    private int action_trial = 0;
     private int kittyId;
+    private ChatMessageListener chatMessageListener;
     private HashMap<Integer, ChatGroupMember> members;
-    private int profileLoadedCounter = 0;
+    private ArrayList<String> offlineMsgList;
+    private int skipPagination = ChatHelper.CHAT_HISTORY_ITEMS_PER_PAGE;
+
     public static void startForResult(Activity activity, int code,
-                                      int kittyId, QBUser qbUser) {
+                                      int kittyId, QBUser qbUser, int position) {
         try {
             Intent intent = new Intent(activity, ChatActivity.class);
-            intent.putExtra(ChatActivity.EXTRA_KITTY_ID, kittyId);
-            intent.putExtra(ChatActivity.EXTRA_QBUSER, qbUser);
+            intent.putExtra(EXTRA_KITTY_ID, kittyId);
+            intent.putExtra(EXTRA_QBUSER, qbUser);
+            intent.putExtra(EXTRA_CLICKED_ITEM_INDEX, position);
             activity.startActivityForResult(intent, code);
         } catch (ActivityNotFoundException e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -156,10 +170,12 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
 
             view.findViewById(R.id.layout_chat_container).requestFocus();
 
+            offlineMsgList = new ArrayList<>();
             viewModel = new MainChatViewModel(this);
             mediaList = new ArrayList<>();
             kittyId = getIntent().getIntExtra(EXTRA_KITTY_ID, 0);
             chatMessageIds = new ArrayList<>();
+
             messagesListView = _findViewById(R.id.list_chat_messages);
             messageEditText = _findViewById(R.id.edit_chat_message);
             progressBar = _findViewById(R.id.progress_chat);
@@ -167,7 +183,8 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
             ImageView imgbg = (ImageView) view.findViewById(R.id.imgChatBg);
             com.kittyapplication.utils.ImageUtils.getImageLoader(this).displayImage("drawable://" + R.drawable.login_screen_bg, imgbg);
 
-            bindData();
+            bindView(new ArrayList<QBMessage>());
+            loadData();
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
@@ -175,7 +192,7 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         //getMediaListFromServer();
     }
 
-    private void bindData() {
+    private void loadData() {
         if (kittyId > 0) {
             viewModel.fetchKittyById(kittyId, new DBQueryHandler.OnQueryHandlerListener<ArrayList<Kitty>>() {
                 @Override
@@ -184,21 +201,16 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
                     if (result.size() > 0) {
                         Kitty kitty = result.get(0);
                         qbDialog = kitty.getQbDialog();
-                        setBasicSetting();
-                    } else {
-                        setBasicSetting();
+//                        addChatListener();
+                        initDialogForChat();
+                        initChatView();
+//                        qbDialog.initForChat(QBChatService.getInstance());
                     }
                 }
             });
         } else {
-            startViewBinding();
+            createDialog();
         }
-    }
-
-    private void setBasicSetting() {
-        setChatNameToActionBar();
-        loadMemberProfile();
-        startViewBinding();
     }
 
     private void loadMemberProfile() {
@@ -214,9 +226,11 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         }
     }
 
-    private void startViewBinding() {
-        bindAdapter();
-        initQBSetting();
+    private void initChatView() {
+        initChat();
+        setChatNameToActionBar();
+        loadMemberProfile();
+        bindData();
     }
 
     private void registerNetworkStateReceiver() {
@@ -224,91 +238,81 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         registerReceiver(networkStateUpdateReceiver, new IntentFilter(AppConstant.NETWORK_STAT_ACTION));
     }
 
-    private void initQBSetting() {
-        System.out.println("initQBSetting");
-        if (QBChatService.getInstance().getGroupChatManager() != null) {
-            init();
-        } else {
-            loginOnQb();
-        }
-    }
+//    private void initQBSetting() {
+//        System.out.println("initQBSetting");
+//        if (QBChatService.getInstance().getGroupChatManager() != null) {
+//            init();
+//        } else {
+//            loginOnQb();
+//        }
+//    }
 
-    private void bindAdapter() {
+    private void bindData() {
         if (qbDialog != null) {
-            int offset = 0;
-
-            if (chatAdapter != null)
-                offset = chatAdapter.getCount();
-
-            viewModel.loadMessages(kittyId, offset, skipPagination,
+            viewModel.loadMessages(kittyId, chatAdapter.getCount(),
                     new DBQueryHandler.OnQueryHandlerListener<ArrayList<QBMessage>>() {
                         @Override
                         public void onResult(ArrayList<QBMessage> result) {
                             if (result != null && result.size() > 0) {
-                                progressBar.setVisibility(View.GONE);
-                                bindAdapter(result);
+                                bindData(result);
                             } else {
-                                bindAdapter(new ArrayList<QBMessage>());
+                                syncMessages();
                             }
                         }
                     });
-        } else {
-            findViewById(R.id.btnSend).setEnabled(false);
-            bindAdapter(new ArrayList<QBMessage>());
         }
     }
 
-
-    private void loginOnQb() {
-        if (ConnectivityUtils.checkInternetConnection(this)) {
-            ChatHelper.getInstance().login(SharedPreferencesUtil.getQbUser(), new QBEntityCallback<Void>() {
+    private void syncMessages() {
+        if (Utils.checkInternetConnection(this)) {
+            AppLog.e(TAG, "syncMessages: start");
+            ChatSyncOperation operation = new ChatSyncOperation(this);
+            operation.syncDialogMessages(kittyId, qbDialog, chatAdapter.getCount(), new DataSyncListener() {
                 @Override
-                public void onSuccess(Void aVoid, Bundle bundle) {
-                    init();
-                }
-
-                @Override
-                public void onError(QBResponseException e) {
-//                    progressBar.setVisibility(View.GONE);
-//                    View rootView = findViewById(R.id.layout_chat_container);
-//                ErrorUtils.showSnackbar(rootView, R.string.error_recreate_session, R.string.dlg_retry, new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        initChat();
-//                    }
-//                });
+                public void onCompleted(int itemCount) {
+                    AppLog.e(TAG, "syncMessages: onCompleted(" + itemCount + ")");
+                    if (itemCount > 0)
+                        bindData();
                 }
             });
         } else {
-            init();
+            AppLog.e(TAG, "syncMessages: chat is null");
         }
     }
 
-    private void init() {
-        initChatConnectionListener();
+//    private void loginOnQb() {
+//        if (ConnectivityUtils.checkInternetConnection(this)) {
+//            ChatHelper.getInstance().login(SharedPreferencesUtil.getQbUser(), new QBEntityCallback<Void>() {
+//                @Override
+//                public void onSuccess(Void aVoid, Bundle bundle) {
+//                    init();
+//                }
+//
+//                @Override
+//                public void onError(QBResponseException e) {
+//                }
+//            });
+//        } else {
+//            init();
+//        }
+//    }
 
-        if (qbDialog == null) {
-            createDialog();
-        } else {
-            qbDialog.setUnreadMessageCount(0);
-            initChat();
-        }
-    }
+//    private void init() {
+////        initChatConnectionListener();
+//
+//        if (qbDialog == null) {
+//            createDialog();
+//        } else {
+//            qbDialog.setUnreadMessageCount(0);
+//            initChat();
+//        }
+//    }
 
     private void createDialog() {
         try {
             QBUser user = (QBUser) getIntent().getSerializableExtra(EXTRA_QBUSER);
-            final List<QBUser> users = new ArrayList<>();
-            users.add(user);
-            users.add(SharedPreferencesUtil.getQbUser());
             if (user.getId() != null) {
-                new ExecutorThread().startExecutor().postTask(new Runnable() {
-                    @Override
-                    public void run() {
-                        createPrivateChatDialog(users);
-                    }
-                });
-
+                createPrivateChatDialog(user);
             } else {
                 progressBar.setVisibility(View.GONE);
                 Toaster.longToast("User not found");
@@ -318,26 +322,49 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         }
     }
 
-    private void createPrivateChatDialog(List<QBUser> users) {
+    private void createPrivateChatDialog(QBUser user) {
+        final List<QBUser> users = new ArrayList<>();
+        users.add(user);
+        users.add(SharedPreferencesUtil.getQbUser());
+
+        viewModel.getPrivateDialogWithUser(user.getId(), new DBQueryHandler.OnQueryHandlerListener<ArrayList<Kitty>>() {
+            @Override
+            public void onResult(ArrayList<Kitty> result) {
+                if (!result.isEmpty()) {
+                    Kitty kitty = result.get(0);
+                    qbDialog = kitty.getQbDialog();
+//                    addChatListener();
+                    initDialogForChat();
+                    kittyId = kitty.getId();
+                    findViewById(R.id.btnSend).setEnabled(true);
+                    initChatView();
+                } else {
+                    createPrivateDialog(users);
+                }
+            }
+        });
+    }
+
+    private void createPrivateDialog(List<QBUser> users) {
         ChatHelper.getInstance().createDialogWithSelectedUsers(users,
-                new QBEntityCallback<QBDialog>() {
+                new QBEntityCallback<QBChatDialog>() {
                     @Override
-                    public void onSuccess(QBDialog qbDialog, Bundle bundle) {
+                    public void onSuccess(QBChatDialog qbDialog, Bundle bundle) {
                         try {
                             String dialog = new Gson().toJson(qbDialog);
                             AppLog.d(TAG, "dialog::" + dialog);
                             qbDialog.setLastMessageDateSent(System.currentTimeMillis() / 1000);
                             ChatActivity.this.qbDialog = qbDialog;
-
+//                            addChatListener();
+                            initDialogForChat();
                             if (qbDialog.getDialogId().equals("0")) {
                                 kittyId = viewModel.getLastKittyId() + 1;
                                 qbDialog.setDialogId(viewModel.getRawGeneratedDialogId(kittyId));
-                                qbDialog.setCustomData(viewModel.getCustomData(kittyId));
                             }
                             progressBar.setVisibility(View.GONE);
                             findViewById(R.id.btnSend).setEnabled(true);
                             viewModel.saveQBDialog(qbDialog);
-                            initChat();
+                            initChatView();
                         } catch (Exception e) {
                             AppLog.e(TAG, e.getMessage(), e);
                         }
@@ -356,6 +383,7 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
                     }
                 });
     }
+
 
     @Override
     String getActionTitle() {
@@ -385,16 +413,20 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         if (qbDialog == null) {
-            qbDialog = (QBDialog) savedInstanceState.getSerializable(EXTRA_DIALOG);
+            qbDialog = (QBChatDialog) savedInstanceState.getSerializable(EXTRA_DIALOG);
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        addConnectionListener();
+        registerNetworkStateReceiver();
+    }
+
+    private void addConnectionListener() {
         if (ConnectivityUtils.checkInternetConnection(this))
             ChatHelper.getInstance().addConnectionListener(chatConnectionListener);
-        registerNetworkStateReceiver();
     }
 
     @Override
@@ -416,43 +448,6 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_chat, menu);
-        try {
-            mMenuItemDiary = menu.findItem(R.id.menu_action_diary);
-            mMenuItemMedia = menu.findItem(R.id.menu_action_media);
-            mMenuItemProfile = menu.findItem(R.id.menu_action_profile);
-            mMenuItemSetting = menu.findItem(R.id.menu_action_setting);
-            mMenuItemRules = menu.findItem(R.id.menu_action_kitty_rule);
-
-            mMenuItemDiary.setVisible(false);
-            mMenuItemMedia.setVisible(false);
-            mMenuItemProfile.setVisible(false);
-            mMenuItemSetting.setVisible(false);
-            mMenuItemRules.setVisible(false);
-
-           /* if (qbDialog != null) {
-                if (qbDialog.getType() == QBDialogType.GROUP) {
-                    mMenuItemSetting.setVisible(true);
-                    if (Utils.isValidString(mStrData) && !mStrData.equalsIgnoreCase("null")) {
-                        ChatData data = new Gson().fromJson(mStrData, ChatData.class);
-                        if (data.getRule().equalsIgnoreCase("0")) {
-                            mMenuItemRules.setVisible(true);
-                            mMenuItemDiary.setVisible(false);
-                        } else {
-                            mMenuItemRules.setVisible(false);
-                            mMenuItemDiary.setVisible(true);
-                        }
-                    } else {
-                        mMenuItemRules.setVisible(false);
-                        mMenuItemDiary.setVisible(false);
-                    }
-                } else {
-                    mMenuItemMedia.setVisible(true);
-                    mMenuItemProfile.setVisible(true);
-                }
-            }*/
-        } catch (Exception e) {
-            AppLog.e(TAG, e.getMessage(), e);
-        }
         return true;
     }
 
@@ -473,9 +468,7 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
                 return super.onOptionsItemSelected(item);
         }
 
-        return super.
-
-                onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item);
 
     }
 
@@ -487,7 +480,12 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
                 result.putExtra(AppConstant.UPDATED_DIALOG, qbDialog);
                 result.putExtra(EXTRA_MARK_READ, chatMessageIds);
                 AppLog.d(TAG, "Dialog::" + qbDialog);
-                viewModel.updateDialog(qbDialog);
+                if (!ConnectivityUtils.checkInternetConnection(this) && offlineMsgList.size() > 0)
+                    viewModel.updateWithSyncableDialog(qbDialog);
+                else
+                    viewModel.updateDialog(qbDialog);
+                int index = getIntent().getIntExtra(EXTRA_CLICKED_ITEM_INDEX, -1);
+                result.putExtra(EXTRA_CLICKED_ITEM_INDEX, index);
                 setResult(RESULT_OK, result);
             }
 
@@ -500,10 +498,10 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
 
     private void leaveGroupChat() {
         try {
-            ((GroupChatImpl) chat).leaveChatRoom();
-            ChatHelper.getInstance().leaveDialog(qbDialog, new QBEntityCallback<QBDialog>() {
+//            ((GroupChatImpl) chat).leaveChatRoom();
+            /*ChatHelper.getInstance().leaveDialog(qbDialog, new QBEntityCallback<QBChatDialog>() {
                 @Override
-                public void onSuccess(QBDialog qbDialog, Bundle bundle) {
+                public void onSuccess(QBChatDialog qbDialog, Bundle bundle) {
                     finish();
                 }
 
@@ -516,7 +514,7 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
 //                        }
 //                    });
                 }
-            });
+            });*/
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
@@ -591,9 +589,9 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
             String text = messageEditText.getText().toString().trim();
             if (!TextUtils.isEmpty(text)) {
                 QBMessage message = getMessage(text, null);
+                messageEditText.setText("");
                 showMessage(message);
                 sendMessage(message);
-                messageEditText.setText("");
             }
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -612,16 +610,13 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
 
     public void showMessage(QBMessage message) {
         try {
-            if (chatAdapter != null) {
+            if (messagesListView.getAdapter() != null) {
                 qbDialog.setLastMessage(message.getMessage().getBody());
                 qbDialog.setLastMessageDateSent(message.getMessage().getDateSent());
-                chatAdapter.add(message);
+                ((ChatMessageAdapter) messagesListView.getAdapter()).add(message);
                 scrollMessageListDown();
             } else {
-                //            if (unShownMessages == null) {
-                //                unShownMessages = new ArrayList<>();
-                //            }
-                //            unShownMessages.add(message);
+                AppLog.d(TAG, "null adapter");
             }
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -636,6 +631,7 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
             chatMessage.setProperty(Consts.KEY_USERNAME, user.getName());
             chatMessage.setProperty(Consts.KEY_IMAGE, user.getProfilePic());
             chatMessage.setDialogId(qbDialog.getDialogId());
+            chatMessage.setSaveToHistory(true);
             if (chatAdapter == null)
                 chatMessage.setProperty(SENT_MESSAGE_INDEX, "" + 0);
             else
@@ -650,6 +646,7 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
                 qbDialog.setLastMessage(text);
             }
             chatMessage.setMarkable(true);
+            chatMessage.setRecipientId(qbDialog.getRecipientId());
             chatMessage.setSenderId(SharedPreferencesUtil.getQbUser().getId());
             chatMessage.setProperty(PROPERTY_SAVE_TO_HISTORY, "1");
             chatMessage.setDateSent(System.currentTimeMillis() / 1000);
@@ -670,32 +667,36 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         viewModel.saveMessage(message, kittyId);
         if (ConnectivityUtils.checkInternetConnection(this)) {
             try {
-                chat.sendMessage(message.getMessage());
-            } catch (XMPPException | SmackException.NotConnectedException e) {
-                Log.e(TAG, "Failed to send a message", e);
-                Toaster.shortToast(R.string.chat_send_message_error);
+                if (qbDialog.getType().equals(QBDialogType.PRIVATE) || qbDialog.isJoined())
+                    qbDialog.sendMessage(message.getMessage());
+            } catch (SmackException.NotConnectedException e) {
+//                Toaster.shortToast(R.string.chat_send_message_error);
             }
+        } else {
+            offlineMsgList.add(message.getMessage().getBody());
         }
 //        message.setId("0");
     }
 
     private void initChat() {
         try {
-
+//            initDialogForChat();
+//            chatMessageListener = new ChatMessageListener();
+//            initChatMessageListener();
+//            qbDialog.addMessageListener(chatMessageListener);
             invalidateOptionsMenu();
-            if (ConnectivityUtils.checkInternetConnection(this)) {
+            if (ConnectivityUtils.checkInternetConnection(this) && qbDialog != null) {
+                addChatListener();
+                qbDialog.setUnreadMessageCount(0);
                 switch (qbDialog.getType()) {
                     case GROUP:
                     case PUBLIC_GROUP:
-                        chat = new GroupChatImpl(chatMessageListener, this);
                         joinGroupChat();
                         break;
 
                     case PRIVATE:
-                        chat = new PrivateChatImpl(chatMessageListener,
-                                QbDialogUtils.getOpponentIdForPrivateDialog(qbDialog)
-                                , this);
                         setChatNameToActionBar();
+                        loadDialogUsers();
                         setSenderInfo();
                         break;
 
@@ -717,38 +718,38 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
     protected void joinGroupChat() {
         System.out.println("joinGroupChat");
         try {
-            if (chat != null) {
-                ((GroupChatImpl) chat).joinGroupChat(qbDialog, new QBEntityCallback<Void>() {
-                    @Override
-                    public void onSuccess(Void result, Bundle b) {
-                        setChatNameToActionBar();
-                        setSenderInfo();
-                    }
+            ChatHelper.getInstance().join(qbDialog, new QBEntityCallback<Void>() {
+                @Override
+                public void onSuccess(Void result, Bundle b) {
+                    setChatNameToActionBar();
+                    setSenderInfo();
+                }
 
-                    @Override
-                    public void onError(QBResponseException e) {
-//                        progressBar.setVisibility(View.GONE);
-//                        snackbar = showErrorSnackbar(R.string.connection_error, e, null);
-                    }
-                });
-            }
+                @Override
+                public void onError(QBResponseException e) {
+                    progressBar.setVisibility(View.GONE);
+                }
+            });
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
     }
 
-    protected void leaveGroupChatRoom() {
-        if (chat != null) {
-            ((GroupChatImpl) chat).leaveChatRoom();
+    private void leaveGroupDialog() {
+        try {
+            ChatHelper.getInstance().leaveChatDialog(qbDialog);
+        } catch (XMPPException | SmackException.NotConnectedException e) {
+            Log.w(TAG, e);
         }
     }
 
     protected void releaseChat() {
         try {
-            if (chat != null) {
-                chat.release();
+            qbDialog.removeMessageListrener(chatMessageListener);
+            if (!QBDialogType.PRIVATE.equals(qbDialog.getType())) {
+                leaveGroupDialog();
             }
-        } catch (XMPPException e) {
+        } catch (Exception e) {
             Log.e(TAG, "Failed to release chat", e);
         }
     }
@@ -756,22 +757,14 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
     protected void updateDialog(final ArrayList<QBUser> selectedUsers) {
         try {
             ChatHelper.getInstance().updateDialogUsers(qbDialog, selectedUsers,
-                    new QBEntityCallback<QBDialog>() {
+                    new QBEntityCallback<QBChatDialog>() {
                         @Override
-                        public void onSuccess(QBDialog dialog, Bundle args) {
+                        public void onSuccess(QBChatDialog dialog, Bundle args) {
                             qbDialog = dialog;
-//                            loadDialogUsers();
                         }
 
                         @Override
                         public void onError(QBResponseException e) {
-//                            showErrorSnackbar(R.string.chat_info_add_people_error, e,
-//                                    new View.OnClickListener() {
-//                                        @Override
-//                                        public void onClick(View v) {
-//                                            updateDialog(selectedUsers);
-//                                        }
-//                                    });
                         }
                     }
             );
@@ -793,8 +786,8 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         }
     }
 
-    private void bindAdapter(final ArrayList<QBMessage> messages) {
-        System.out.println("bindAdapter(ArrayList<QBChatMessage> messages)");
+    private void bindData(final ArrayList<QBMessage> messages) {
+        System.out.println("bindData(ArrayList<QBChatMessage> messages)");
         if (members != null && members.size() > 0) {
             new BaseAsyncTask<ArrayList<QBMessage>, Void, ArrayList<QBMessage>>() {
 
@@ -807,45 +800,40 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
                 @Override
                 public void onResult(ArrayList<QBMessage> qbMessages) {
                     try {
-
-                        Log.e(TAG, "bindAdapter: messages :>" + qbMessages.toString());
-                        if (chatAdapter == null) {
-                            initListView(qbMessages);
-                        } else {
-                            chatAdapter.addList(qbMessages);
-                            messagesListView.setSelection(qbMessages.size() - 1);
-                            chatAdapter.notifyDataSetChanged();
-                            if (qbMessages.size() < ChatHelper.CHAT_HISTORY_ITEMS_PER_PAGE) {
-                                chatAdapter.setPaginationHistoryListener(null);
-                            }
-                        }
+                        Log.e(TAG, "bindData: messages :>" + qbMessages.toString());
+                        Collections.reverse(qbMessages);
+                        chatAdapter.addList(qbMessages);
+                        messagesListView.setSelection(qbMessages.size() - 1);
+                        chatAdapter.notifyDataSetChanged();
                         skipPagination += ChatHelper.CHAT_HISTORY_ITEMS_PER_PAGE;
+                        progressBar.setVisibility(View.GONE);
                     } catch (Exception e) {
                         progressBar.setVisibility(View.GONE);
                         AppLog.e(TAG, e.getMessage(), e);
                     }
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, messages);
-        } else if (chatAdapter == null) {
-            initListView(messages);
         }
     }
 
-    private void initListView(ArrayList<QBMessage> messages) {
+    private void bindView(ArrayList<QBMessage> messages) {
         chatAdapter = new ChatMessageAdapter(ChatActivity.this, messages);
         chatAdapter.setOutGoingMessageBgColor(R.color.colorAccent);
-        if (messages.size() >= ChatHelper.CHAT_HISTORY_ITEMS_PER_PAGE) {
-            chatAdapter.setPaginationHistoryListener(new PaginationHistoryListener() {
-                @Override
-                public void downloadMore() {
-                    System.out.println("downloadMore");
-                    loadChatHistory();
-                }
-            });
-        }
+        setPaginationListener();
         messagesListView.setAdapter(chatAdapter);
         messagesListView.setAreHeadersSticky(false);
         messagesListView.setDivider(null);
+    }
+
+    private void setPaginationListener() {
+        chatAdapter.setPaginationHistoryListener(new PaginationHistoryListener() {
+            @Override
+            public void downloadMore() {
+                System.out.println("downloadMore");
+                if (chatAdapter.getCount() > 0)
+                    bindData();
+            }
+        });
     }
 
     private ArrayList<QBMessage> reconstructArrayWithMemberProfile(ArrayList<QBMessage> messages) {
@@ -853,110 +841,6 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
             bindMemberInfo(message);
         }
         return messages;
-    }
-
-    protected void loadChatHistory() {
-        System.out.println("loadChatHistory");
-        if (ConnectivityUtils.checkInternetConnection(this) && !viewModel.isMessageCleared(qbDialog.getDialogId())) {
-            if (chatAdapter == null || chatAdapter.getCount() < skipPagination)
-                skipPagination = 0;
-//            new ExecutorThread().startExecutor().postTask(new Runnable() {
-//                @Override
-//                public void run() {
-            ChatHelper.getInstance().loadChatHistory(qbDialog, skipPagination, new QBEntityCallback<ArrayList<QBChatMessage>>() {
-                @Override
-                public void onSuccess(ArrayList<QBChatMessage> messages, Bundle args) {
-                    // The newest messages should be in the end of list,
-                    // so we need to reverse list to show messages in the right order
-                    addServerMessages(messages);
-                }
-
-                @Override
-                public void onError(QBResponseException e) {
-                    showNetworkError(e);
-                }
-            });
-//                }
-//            });
-        } else {
-            progressBar.setVisibility(View.GONE);
-        }
-    }
-
-    private void addServerMessages(final ArrayList<QBChatMessage> messages) {
-        if (messages.size() > 0) {
-            Collections.reverse(messages);
-            new BaseAsyncTask<ArrayList<QBChatMessage>, Void, ArrayList<QBMessage>>() {
-
-                @SafeVarargs
-                @Override
-                public final ArrayList<QBMessage> performInBackground(ArrayList<QBChatMessage>... params) throws Exception {
-                    ArrayList<QBChatMessage> list = params[0];
-                    ArrayList<QBMessage> messages = new ArrayList<QBMessage>();
-                    for (QBChatMessage chatMessage : list) {
-                        QBMessage msg = getGeneratedQBMessage(chatMessage, 1);
-                        messages.add(msg);
-                    }
-                    System.out.println("list size::>" + list.size());
-                    if (chatAdapter == null)
-                        return messages;
-                    ArrayList<QBMessage> old = (ArrayList<QBMessage>) chatAdapter.getList();
-                    return viewModel.getUnSavedFilteredMessage(old, messages);
-                }
-
-                @Override
-                public void onResult(ArrayList<QBMessage> msgs) {
-                    System.out.println("Result size::>" + msgs.size());
-                    bindAdapter(msgs);
-                    viewModel.saveMessages(msgs, kittyId);
-                    progressBar.setVisibility(View.GONE);
-                }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, messages);
-        } else {
-            progressBar.setVisibility(View.GONE);
-        }
-    }
-
-//    private void startMemberInfoBindingTask(final ArrayList<QBMessage> msgs) {
-//        BackgroundExecutorThread backgroundExecutorThread = new BackgroundExecutorThread();
-//        backgroundExecutorThread.execute(new Interactor() {
-//            @Override
-//            public void execute() {
-//                for (QBMessage msg : msgs) {
-//                    if (members.size() > 0) {
-//                        for (ChatGroupMember member : members) {
-//                            if (member != null && member.getMemberId() != null) {
-//                                if (member.getMemberId().equals(msg.getMessage().getSenderId())) {
-//                                    msg.setSenderName(member.getMemberName());
-//                                    Bitmap bitmap = ImageUtils.getImage(member.getImage());
-//                                    RoundedBitmapDrawable drawable = ImageLoaderUtils.getCircleBitmapDrawable(bitmap);
-//                                    msg.setSenderImage(drawable);
-//                                } else {
-//                                    AppLog.e(TAG, member.getMemberId() + " =====NOT MATCH===== " + msg.getMessage().getSenderId());
-//                                }
-//                            } else {
-//                                AppLog.e(TAG, "No member is null ");
-//                            }
-//                        }
-//                    } else {
-//                        AppLog.e(TAG, "No member found size is " + members.size());
-//                    }
-//                }
-//            }
-//        }, new Interactor.OnExecutionFinishListener() {
-//            @Override
-//            public void onFinish() {
-//                bindAdapter(msgs);
-//                viewModel.saveMessages(msgs, kittyId);
-//                progressBar.setVisibility(View.GONE);
-//            }
-//        });
-//    }
-
-    private void showNetworkError(Exception e) {
-//        progressBar.setVisibility(View.GONE);
-        skipPagination -= ChatHelper.CHAT_HISTORY_ITEMS_PER_PAGE;
-//        snackbar = showErrorSnackbar(R.string.connection_error, e, null);
     }
 
     private void scrollMessageListDown() {
@@ -990,63 +874,39 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
     }
 
     private void initChatConnectionListener() {
-        System.out.println("initChatConnectionListener");
         if (ConnectivityUtils.checkInternetConnection(this)) {
             chatConnectionListener = new VerboseQbChatConnectionListener(getSnackbarAnchorView()) {
                 @Override
-                public void connectionClosedOnError(final Exception e) {
-                    super.connectionClosedOnError(e);
-
-                    try {
-                        // Leave active room if we're in Group Chat
-                        if (qbDialog.getType() == QBDialogType.GROUP) {
+                public void reconnectionSuccessful() {
+                    super.reconnectionSuccessful();
+                    skipPagination = 0;
+                    chatAdapter = null;
+                    switch (qbDialog.getType()) {
+                        case PRIVATE:
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    leaveGroupChatRoom();
+                                    setSenderInfo();
                                 }
                             });
-                        }
-                    } catch (Exception e1) {
-                        AppLog.e(TAG, e.getMessage(), e);
-                    }
-                }
-
-                @Override
-                public void reconnectionSuccessful() {
-                    super.reconnectionSuccessful();
-                    try {
-                        skipPagination = 0;
-                        chatAdapter = null;
-                        switch (qbDialog.getType()) {
-                            case PRIVATE:
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        setSenderInfo();
-                                    }
-                                });
-                                break;
-                            case GROUP:
-                                // Join active room if we're in Group Chat
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        joinGroupChat();
-                                    }
-                                });
-                                break;
-                        }
-                    } catch (Exception e) {
-                        AppLog.e(TAG, e.getMessage(), e);
+                            break;
+                        case GROUP:
+                            // Join active room if we're in Group Chat
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    joinGroupChat();
+                                }
+                            });
+                            break;
                     }
                 }
             };
-            ChatHelper.getInstance().addConnectionListener(chatConnectionListener);
+            addConnectionListener();
         }
     }
 
-    private QBChatMessageListener chatMessageListener = new QBChatMessageListener() {
+    /*private QBChatMessageListener chatMessageListener = new QBChatMessageListener() {
         @Override
         public void onQBChatMessageReceived(QBChat chat, QBChatMessage message) {
             try {
@@ -1073,7 +933,7 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
                 AppLog.e(TAG, e.getMessage(), e);
             }
         }
-    };
+    };*/
 
     @Override
     public void onUploaded(File file, QBAttachment attachment) {
@@ -1120,10 +980,6 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         }
     }
 
-    private Bitmap getDefaultBitmap() {
-        return BitmapFactory.decodeResource(getResources(), R.drawable.ic_user);
-    }
-
     private void setMessageSenderInfo(int senderId) {
         ChatGroupMember member = viewModel.getMember(senderId);
         Log.e(TAG, "setMessageSenderInfo: " + member.toString());
@@ -1136,19 +992,15 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         try {
 
             if (ConnectivityUtils.checkInternetConnection(this)) {
-                QBUsers.getUsersByIDs(qbDialog.getOccupants(), null, new QBEntityCallback<ArrayList<QBUser>>() {
+               /* QBUsers.getUsersByIDs(getWithoutLoginUserMemberList(), null, new QBEntityCallback<ArrayList<QBUser>>() {
                     @Override
                     public void onSuccess(ArrayList<QBUser> users, Bundle params) {
-                        AppLog.d(TAG, "QBUser List::::::  " + new Gson().toJson(users));
                         for (final QBUser user : users) {
                             if (user.getFileId() != null) {
                                 QBUserUtils.downloadUserProfilePicture(user.getFileId(), new QBEntityCallback<InputStream>() {
                                     @Override
                                     public void onSuccess(InputStream inputStream, Bundle bundle) {
-                                        AppLog.d(TAG, "downloadUserProfilePicture" + inputStream);
-                                        AppLog.d(TAG, "user.getFullName()" + user.getFullName());
-                                        StringUtils.printBundle(bundle);
-                                        loadUserAvatarBitmap(user, inputStream);
+                                        saveUserProfileName(user, inputStream);
                                     }
 
                                     @Override
@@ -1156,9 +1008,6 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
                                         AppLog.e(TAG, e.getMessage());
                                     }
                                 });
-                            } else {
-                                loadUserDisplayName(user);
-                                AppLog.d(TAG, user.getFullName() + "::profile image id is " + user.getFileId());
                             }
                         }
                     }
@@ -1167,77 +1016,106 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
                     public void onError(QBResponseException errors) {
                         AppLog.e(TAG, errors.getMessage());
                     }
-                });
+                });*/
+
+                QBPagedRequestBuilder pagedRequestBuilder = new QBPagedRequestBuilder();
+                pagedRequestBuilder.setPage(1);
+                pagedRequestBuilder.setPerPage(10);
+                Bundle bundle = new Bundle();
+
+                QBUsers.getUsersByIDs(getWithoutLoginUserMemberList(),
+                        pagedRequestBuilder, bundle)
+                        .performAsync(new QBEntityCallback<ArrayList<QBUser>>() {
+                            @Override
+                            public void onSuccess(ArrayList<QBUser> users, Bundle params) {
+                                for (final QBUser user : users) {
+                                    if (user.getFileId() != null) {
+                                        QBUserUtils.downloadUserProfilePicture(user.getFileId(),
+                                                new QBEntityCallback<InputStream>() {
+                                                    @Override
+                                                    public void onSuccess(InputStream inputStream,
+                                                                          Bundle bundle) {
+                                                        loadUserAvatarBitmap(user, inputStream);
+                                                    }
+
+                                                    @Override
+                                                    public void onError(QBResponseException e) {
+                                                        AppLog.e(TAG, e.getMessage());
+                                                    }
+                                                });
+                                    } else {
+                                        saveUserProfileName(user);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onError(QBResponseException errors) {
+                                AppLog.e(TAG, errors.getMessage());
+                            }
+
+                        });
             }
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
     }
 
-    private void loadUserDisplayName(final QBUser user) {
+    private void loadUserAvatarBitmap(final QBUser user, final InputStream is) {
         try {
-            new BaseAsyncTask<Void, Void, Object[]>() {
+            new BaseAsyncTask<Void, Void, Bitmap>() {
 
                 @Override
-                public Object[] performInBackground(Void... params) throws Exception {
-                    Object[] objects = new Object[2];
+                public Bitmap performInBackground(Void... params) throws Exception {
                     try {
+                        if (is == null)
+                            return null;
                         if (user.getPhone() != null && user.getPhone().length() > 0) {
-                            objects[0] = Utils.getDisplayNameByPhoneNumber(ChatActivity.this, user.getPhone());
+                            user.setFullName(Utils.getDisplayNameByPhoneNumber(ChatActivity.this, user.getPhone()));
                         }
 
-                        objects[1] = BitmapFactory.decodeResource(getResources(), R.drawable.ic_user);
+                        return BitmapFactory.decodeStream(is);
+
                     } catch (Exception e) {
                         AppLog.e(TAG, e.getMessage(), e);
                     }
-                    return objects;
+                    return null;
                 }
 
                 @Override
-                public void onResult(Object[] objects) {
-                    profileLoadedCounter++;
-                    if (objects != null) {
-                        saveMember(user, objects);
-                    }
+                public void onResult(Bitmap bitmap) {
+                    if (bitmap != null)
+                        saveMemberUser(user, ImageUtils.getBytes(bitmap));
+                    else
+                        saveMemberUser(user, null);
                 }
-            }.execute();
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
     }
 
-
-    private void loadUserAvatarBitmap(final QBUser user, final InputStream is) {
+    private void saveUserProfileName(final QBUser user) {
         try {
-            new BaseAsyncTask<Void, Void, Object[]>() {
+            new BaseAsyncTask<Void, Void, QBUser>() {
 
                 @Override
-                public Object[] performInBackground(Void... params) throws Exception {
-                    Object[] objects = new Object[2];
+                public QBUser performInBackground(Void... params) throws Exception {
                     try {
-                        if (is == null)
-                            return null;
                         if (user.getPhone() != null && user.getPhone().length() > 0) {
-                            objects[0] = Utils.getDisplayNameByPhoneNumber(ChatActivity.this, user.getPhone());
+                            user.setFullName(Utils.getDisplayNameByPhoneNumber(ChatActivity.this, user.getPhone()));
                         }
-
-                        if (objects[0] == null)
-                            objects[0] = user.getFullName() != null ? user.getFullName() : user.getId();
-
-                        objects[1] = BitmapFactory.decodeStream(is);
                     } catch (Exception e) {
                         AppLog.e(TAG, e.getMessage(), e);
                     }
-                    return objects;
+                    return user;
                 }
 
                 @Override
-                public void onResult(Object[] objects) {
-                    if (objects != null) {
-                        saveMember(user, objects);
-                    }
+                public void onResult(QBUser qbUser) {
+                    saveMemberUser(qbUser, null);
                 }
-            }.execute();
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
@@ -1248,31 +1126,15 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         super.onDestroy();
     }
 
-
-    private void saveMember(QBUser user, Object[] objects) {
-        saveMemberUser(user, ImageUtils.getBytes((Bitmap) objects[1]));
-    }
-
     private void saveMemberUser(QBUser user, byte[] image) {
         try {
-            ChatGroupMember member = new ChatGroupMember();
-            member.setMemberId(user.getId());
-            member.setMemberNumber(user.getPhone());
-            member.setMemberName(user.getFullName());
-            member.setGroupId(qbDialog.getDialogId());
-            member.setImage(image);
-            AppLog.e(TAG, member.toString());
+            ChatGroupMember member = viewModel.getMember(user, image);
             viewModel.addMember(member);
 
             if (members == null)
                 members = new HashMap<>();
 
             members.put(user.getId(), member);
-
-            AppLog.e(TAG, "Member size ::" + members.size() + "= QBDialog Member size ::" + qbDialog.getOccupants().size());
-            if (members.size() == qbDialog.getOccupants().size()) {
-                loadChatHistory();
-            }
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
@@ -1292,17 +1154,17 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
     private void clearChatData() {
         try {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(ResourceUtils.getString(R.string.app_name));
+            builder.setTitle(ResourceUtils.getString(this, R.string.app_name));
             String msg = getResources().getString(R.string.delete_alert_msg, "Delete");
             builder.setMessage(msg);
             builder.setCancelable(false);
-            builder.setPositiveButton(ResourceUtils.getString(R.string.proceed), new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(ResourceUtils.getString(this, R.string.proceed), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     clearChat();
                     dialog.dismiss();
                 }
-            }).setNegativeButton(ResourceUtils.getString(R.string.dismiss), new DialogInterface.OnClickListener() {
+            }).setNegativeButton(ResourceUtils.getString(this, R.string.dismiss), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
@@ -1320,16 +1182,15 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
 
             if (ConnectivityUtils.checkInternetConnection(this)) {
                 if (getMessageIdSet() != null && !getMessageIdSet().isEmpty()) {
-
-                    QBChatService.deleteMessages(getMessageIdSet(), new QBEntityCallback<Void>() {
+                    ChatHelper.getInstance().deleteMessages(getMessageIdSet(), new QBEntityCallback<Void>() {
                         @Override
-                        public void onSuccess(Void aVoid, Bundle bundle) {
+                        public void onSuccess(Void o, Bundle bundle) {
                             viewModel.clearHistory(kittyId);
                         }
 
                         @Override
-                        public void onError(QBResponseException errors) {
-//                            progressBar.setVisibility(View.GONE);
+                        public void onError(QBResponseException e) {
+
                         }
                     });
                 }
@@ -1441,67 +1302,93 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         }
     }
 
+    @Override
+    public void onSessionCreated(boolean success) {
+        if (success) {
+//            initChat();
+        }
+    }
+
     private class NetworkStateUpdateReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             System.out.println("NetworkStateUpdateReceiver$onReceive");
-            int limit = ChatHelper.CHAT_HISTORY_ITEMS_PER_PAGE;
-            if (chatAdapter != null && chatAdapter.getCount() > 0) {
-                limit = chatAdapter.getCount();
+            initChat();
+        }
+    }
+
+    private List<Integer> getWithoutLoginUserMemberList() {
+        List<Integer> members = new ArrayList<>();
+        members.addAll(qbDialog.getOccupants());
+        return members;
+    }
+
+    public class ChatMessageListener extends QbChatDialogMessageListenerImp {
+        @Override
+        public void processMessage(String s, QBChatMessage qbChatMessage, Integer integer) {
+//            showMessage(qbChatMessage);
+            AppLog.d(TAG, "recive message " + new Gson().toJson(qbChatMessage));
+            try {
+                QBMessage qbMessage = new QBMessage();
+                qbMessage.setMessage(qbChatMessage);
+                qbMessage.setKittyId(kittyId);
+                Integer userId = SharedPreferencesUtil.getQbUser().getId();
+
+                if (!userId.equals(qbChatMessage.getSenderId())) {
+                    setMessageSenderInfo(qbChatMessage.getSenderId());
+                    chatMessageIds.add(qbChatMessage.getId());
+                    bindMemberInfo(qbMessage);
+                    // save locally
+                    viewModel.saveMessage(qbMessage, kittyId);
+                    int index = ((ChatMessageAdapter) messagesListView.getAdapter()).getList().size();
+                    QBMessage lastMessage =
+                            ((ChatMessageAdapter) messagesListView.getAdapter()).getList().get(index - 1);
+                    if ((lastMessage.getMessage().getDateSent()) != qbChatMessage.getDateSent())
+                        showMessage(qbMessage);
+                    else
+                        AppLog.d(TAG, "match found");
+
+                    markAsRead(qbChatMessage);
+                } else {
+                    //  TODO
+                    int lastInsertedId = Integer.parseInt((String) qbChatMessage.getProperty(AppConstant.LAST_INSERTED_ID));
+                    viewModel.updateMessage(qbChatMessage, lastInsertedId);
+                }
+
+            } catch (Exception e) {
+                AppLog.e(TAG, e.getMessage(), e);
             }
-            viewModel.loadMessages(kittyId, 0, limit,
-                    new DBQueryHandler.OnQueryHandlerListener<ArrayList<QBMessage>>() {
-                        @Override
-                        public void onResult(ArrayList<QBMessage> result) {
-                            if (result != null && result.size() > 0) {
-                                if (chatAdapter != null)
-                                    chatAdapter.getList().clear();
-                                bindAdapter(result);
-                            }
-                        }
-                    });
-            initQBSetting();
         }
     }
 
-    @Override
-    public void onMessageFail(QBChatMessage chatMessage) {
+    private void markAsRead(QBChatMessage chatMessage) {
+        if (chatMessage.isMarkable()) {
+            try {
+                qbDialog.readMessage(chatMessage);
+            } catch (XMPPException | SmackException.NotConnectedException e) {
 
+            }
+        }
+    }
+    /*TODO Message Listener Start*/
+
+    private void initChatMessageListener() {
         try {
-            int index = Integer.parseInt((String) chatMessage.getProperty(SENT_MESSAGE_INDEX));
-            QBMessage message = chatAdapter.getItem(index);
-            message.setFail(1);
-            chatAdapter.updateList(message, index);
-            viewModel.updateFail(message.getMessage(), kittyId);
-            Log.i(TAG, "onMessageFail: ");
+            QBMessageStatusesManager manager = QBChatService.getInstance().getMessageStatusesManager();
+            manager.addMessageStatusListener(ChatActivity.this);
+            qbDialog.addMessageSentListener(ChatActivity.this);
         } catch (Exception e) {
-            AppLog.e(TAG, e.getMessage(), e);
-        }
-
-    }
-
-    @Override
-    public void onMessageSent(QBChatMessage chatMessage) {
-        try {
-            int index = Integer.parseInt((String) chatMessage.getProperty(SENT_MESSAGE_INDEX));
-            int lastInsertedId = Integer.parseInt((String) chatMessage.getProperty(AppConstant.LAST_INSERTED_ID));
-            QBMessage message = chatAdapter.getItem(index);
-            message.setSent(1);
-            message.setMessage(chatMessage);
-            chatAdapter.updateList(message, index);
-            viewModel.updateSent(message.getMessage(), lastInsertedId);
-            Log.i(TAG, "onMessageSent: ");
-        } catch (Exception e) {
-            AppLog.e(TAG, e.getMessage(), e);
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void onMessageDelivered(String messageID, String dialogID, Integer occupantsID) {
+    public void processMessageDelivered(String messageID, String dialogID, Integer occupantsID) {
         try {
             AppLog.e(TAG, "onMessageDelivered: " + messageID);
-            QBMessage message = chatAdapter.getMessageById(messageID);
+//            QBMessage message = chatAdapter.getMessageById(messageID);
+            QBMessage message = ((ChatMessageAdapter) messagesListView.getAdapter()).getMessageById(messageID);
             if (message != null) {
                 message.setDelivered(1);
                 if (message.getMessage().getDeliveredIds() == null) {
@@ -1517,7 +1404,7 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
     }
 
     @Override
-    public void onMessageRead(String messageID, String dialogID, Integer occupantsID) {
+    public void processMessageRead(String messageID, String dialogID, Integer occupantsID) {
         try {
             AppLog.e(TAG, "onMessageRead: " + messageID);
             QBMessage message = chatAdapter.getMessageById(messageID);
@@ -1533,5 +1420,72 @@ public class ChatActivity extends BaseActivity implements OnImagePickedListener,
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void processMessageSent(String s, QBChatMessage qbChatMessage) {
+        Log.d(TAG, "processMessageSent: ");
+        try {
+            AppLog.d(TAG, new Gson().toJson(qbChatMessage).toString());
+            int index = Integer.parseInt((String) qbChatMessage.getProperty(SENT_MESSAGE_INDEX));
+            int lastInsertedId = Integer.parseInt((String) qbChatMessage.getProperty(AppConstant.LAST_INSERTED_ID));
+            QBMessage message = chatAdapter.getItem(index);
+            message.setSent(1);
+            message.setMessage(qbChatMessage);
+            chatAdapter.updateList(message, index);
+            viewModel.updateSent(message.getMessage(), lastInsertedId);
+            Log.i(TAG, "onMessageSent: " + qbChatMessage.getBody());
+        } catch (Exception e) {
+            AppLog.e(TAG, e.getMessage(), e);
+        }
+
+    }
+
+    @Override
+    public void processMessageFailed(String s,
+                                     QBChatMessage qbChatMessage) {
+        Log.d(TAG, "processMessageFailed: ");
+        try {
+            int index = Integer.parseInt((String) qbChatMessage.getProperty(SENT_MESSAGE_INDEX));
+            QBMessage message = chatAdapter.getItem(index);
+            message.setFail(1);
+            chatAdapter.updateList(message, index);
+            viewModel.updateFail(message.getMessage(), kittyId);
+            Log.i(TAG, "onMessageFail: ");
+        } catch (Exception ex) {
+            AppLog.e(TAG, ex.getMessage(), ex);
+        }
+
+    }
+
+    private void loadDialogUsers() {
+        ChatHelper.getInstance().getUsersFromDialog(qbDialog, new QBEntityCallback<ArrayList<QBUser>>() {
+            @Override
+            public void onSuccess(ArrayList<QBUser> users, Bundle bundle) {
+                setChatNameToActionBar();
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+            }
+        });
+    }
+
+    private void initDialogForChat() {
+        try {
+            if (qbDialog != null) {
+                qbDialog.initForChat(QBChatService.getInstance());
+            }
+        } catch (Exception e) {
+            AppLog.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    private void addChatListener() {
+//        initDialogForChat();
+        chatMessageListener = new ChatMessageListener();
+        initChatMessageListener();
+        qbDialog.addMessageListener(chatMessageListener);
+        initChatConnectionListener();
     }
 }

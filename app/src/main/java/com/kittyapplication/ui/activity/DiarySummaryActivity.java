@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.kittyapplication.R;
 import com.kittyapplication.adapter.DiarySummaryListAdapter;
+import com.kittyapplication.model.OfflineSummeryMembers;
 import com.kittyapplication.model.SummaryListDao;
 import com.kittyapplication.ui.viewmodel.DiarySummaryViewModel;
 import com.kittyapplication.utils.AppConstant;
@@ -93,7 +94,7 @@ public class DiarySummaryActivity extends BaseActivity {
         return true;
     }
 
-    public void showProgressDialog() {
+   /* public void showProgressDialog() {
         mDialog = new ProgressDialog(DiarySummaryActivity.this);
         mDialog.setMessage(getResources().getString(R.string.loading_text));
         mDialog.show();
@@ -108,17 +109,19 @@ public class DiarySummaryActivity extends BaseActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
-    public void setHostList(List<SummaryListDao> list) {
+    public void setHostList(OfflineSummeryMembers members) {
         try {
-            mList = list;
-            if (mViewModel != null && mViewModel.getCount() != 0) {
-                mTxtParticipants.setText(getString(R.string.pariticpant_count, "" + mViewModel.getCount()));
-            } else {
-                mTxtParticipants.setText(getString(R.string.pariticpant_count, "" + list.size()));
-            }
-            mAdapter = new DiarySummaryListAdapter(DiarySummaryActivity.this, list, false);
+            mList = members.getData();
+//            if (mViewModel != null && mViewModel.getCount() != 0) {
+            mTxtParticipants.setText(getString(R.string.pariticpant_count, "" + members.getCount()));
+            AppLog.d(TAG, "Server Count " + members.getCount());
+//            } else {
+//                mTxtParticipants.setText(getString(R.string.pariticpant_count, "" + members.getData().size()));
+//
+//            }
+            mAdapter = new DiarySummaryListAdapter(DiarySummaryActivity.this, members.getData(), false);
             mLvHostList.setAdapter(mAdapter);
         } catch (Exception e) {
             e.printStackTrace();

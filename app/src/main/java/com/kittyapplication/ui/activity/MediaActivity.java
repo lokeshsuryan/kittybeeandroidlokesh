@@ -13,11 +13,11 @@ import android.view.View;
 
 import com.kittyapplication.R;
 import com.kittyapplication.adapter.MediaAdapter;
-import com.kittyapplication.utils.AppConstant;
 import com.quickblox.chat.QBChatService;
+import com.quickblox.chat.QBRestChatService;
 import com.quickblox.chat.model.QBAttachment;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 import com.quickblox.core.request.QBRequestGetBuilder;
@@ -34,7 +34,7 @@ public class MediaActivity extends BaseActivity {
     private static final String EXTRA_MEDIA = "media";
     private static final String INTENT_MEDIA_DATA = "media_data";
     private ArrayList<String> mMediaList;
-    private QBDialog qbDialog;
+    private QBChatDialog qbDialog;
     private RecyclerView recyclerView;
     private ProgressDialog progressDialog;
 
@@ -44,7 +44,7 @@ public class MediaActivity extends BaseActivity {
         activity.startActivity(intent);
     }
 
-    public static void startMediaActivity(Activity activity, QBDialog qbDialog, ArrayList<String> list) {
+    public static void startMediaActivity(Activity activity, QBChatDialog qbDialog, ArrayList<String> list) {
         Intent intent = new Intent(activity, MediaActivity.class);
         intent.putExtra(EXTRA_MEDIA, list);
         intent.putExtra(INTENT_MEDIA_DATA, qbDialog);
@@ -72,7 +72,7 @@ public class MediaActivity extends BaseActivity {
             progressDialog = new ProgressDialog(MediaActivity.this);
             progressDialog.setMessage("Loading...");
             progressDialog.show();
-            qbDialog = (QBDialog) getIntent().getSerializableExtra(INTENT_MEDIA_DATA);
+            qbDialog = (QBChatDialog) getIntent().getSerializableExtra(INTENT_MEDIA_DATA);
             getMediaListFromServer();
         }
     }
@@ -125,10 +125,9 @@ public class MediaActivity extends BaseActivity {
         requestBuilder.setLimit(100);
         requestBuilder.addRule("attachments.type", QueryRule.EQ, QBAttachment.PHOTO_TYPE);
 
-
-        QBChatService.getDialogMessages(qbDialog, requestBuilder, new QBEntityCallback<ArrayList<QBChatMessage>>() {
+        QBRestChatService.getDialogMessages(qbDialog, requestBuilder).performAsync(new QBEntityCallback<ArrayList<QBChatMessage>>() {
             @Override
-            public void onSuccess(ArrayList<QBChatMessage> messages, Bundle args) {
+            public void onSuccess(ArrayList<QBChatMessage> messages, Bundle bundle) {
                 if (progressDialog != null)
                     progressDialog.dismiss();
                 if (messages != null && !messages.isEmpty()) {
@@ -143,7 +142,7 @@ public class MediaActivity extends BaseActivity {
             }
 
             @Override
-            public void onError(QBResponseException errors) {
+            public void onError(QBResponseException e) {
                 if (progressDialog != null)
                     progressDialog.dismiss();
             }

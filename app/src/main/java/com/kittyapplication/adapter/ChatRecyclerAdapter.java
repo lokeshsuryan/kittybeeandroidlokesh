@@ -3,7 +3,8 @@ package com.kittyapplication.adapter;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.util.Log;
 import android.view.View;
@@ -16,25 +17,29 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
+import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
-import com.kittyapplication.core.async.BaseAsyncTask;
+import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.core.ui.adapter.BaseSelectedRecyclerViewAdapter;
+import com.kittyapplication.core.utils.ResourceUtils;
 import com.kittyapplication.custom.CustomTextViewBold;
 import com.kittyapplication.custom.CustomTextViewNormal;
 import com.kittyapplication.custom.RoundedImageView;
 import com.kittyapplication.model.ChatData;
 import com.kittyapplication.model.Kitty;
+import com.kittyapplication.sqlitedb.DBQueryHandler;
 import com.kittyapplication.ui.activity.ChatActivity;
 import com.kittyapplication.ui.activity.HomeActivity;
 import com.kittyapplication.ui.callback.ChatActionModeCallback;
+import com.kittyapplication.ui.viewmodel.KittyViewModel;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.ImageUtils;
 import com.kittyapplication.utils.Utils;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
 import com.quickblox.chat.model.QBDialogType;
+import com.quickblox.users.model.QBUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,18 +62,39 @@ public class ChatRecyclerAdapter extends BaseSelectedRecyclerViewAdapter<Kitty>
         super(context, objectsList);
         filter = new ItemFilter();
         mListClone = objectsList;
+        dataMsg = ResourceUtils.getString(AppApplication.getInstance(), R.string.loading);
     }
 
     public void setCurrentActionMode(ActionMode currentActionMode) {
         this.currentActionMode = currentActionMode;
     }
 
-    public void addCreatedDialog(QBDialog qbDialog) {
+    public void setTapOnHold() {
+        ((AppCompatActivity) context).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setPaginationHistoryListener(null);
+                setDataMsg(ResourceUtils.getString(AppApplication.getInstance(), R.string.tap_on_hold));
+                notifyDataSetChanged();
+            }
+        });
+    }
+
+    public void addCreatedDialog(final QBChatDialog qbDialog) {
         try {
-            Kitty Kitty = new Kitty();
-            Kitty.setQbDialog(qbDialog);
-            addAt(0, Kitty);
-            notifyDataSetChanged();
+            KittyViewModel model = new KittyViewModel(context);
+            model.fetchKittyByQBDialogId(qbDialog.getDialogId(), new DBQueryHandler.OnQueryHandlerListener<ArrayList<Kitty>>() {
+                @Override
+                public void onResult(ArrayList<Kitty> result) {
+                    if (!result.isEmpty()) {
+                        Kitty kitty = result.get(0);
+                        kitty.setQbDialog(qbDialog);
+                        addAt(0, kitty);
+                        notifyDataSetChanged();
+                    }
+                }
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -77,7 +103,7 @@ public class ChatRecyclerAdapter extends BaseSelectedRecyclerViewAdapter<Kitty>
     public void updatedMessage(QBChatMessage message) {
         try {
             for (Kitty Kitty : getList()) {
-                QBDialog qbDialog = Kitty.getQbDialog();
+                QBChatDialog qbDialog = Kitty.getQbDialog();
                 if (qbDialog.getDialogId().equals(message.getDialogId())) {
                     qbDialog.setLastMessage(message.getBody());
                     int unreadCount = qbDialog.getUnreadMessageCount();
@@ -93,112 +119,71 @@ public class ChatRecyclerAdapter extends BaseSelectedRecyclerViewAdapter<Kitty>
         }
     }
 
+    private Kitty isPrivateDialogExist(List<Integer> members) {
+        ArrayList<Integer> selectedUsers = new ArrayList<>();
+        selectedUsers.addAll(members);
+        selectedUsers.remove(ChatHelper.getCurrentUser().getId());
+        return selectedUsers.size() == 1 ? getPrivateDialogWithUser(selectedUsers.get(0)) : null;
+    }
+
+    public boolean hasPrivateDialogWithUser(Integer id) {
+        return getPrivateDialogWithUser(id) != null;
+    }
+
+    public Kitty getPrivateDialogWithUser(Integer id) {
+        for (Kitty kitty : getList()) {
+            QBChatDialog chatDialog = kitty.getQbDialog();
+            if (QBDialogType.PRIVATE.equals(chatDialog.getType())
+                    && chatDialog.getOccupants().contains(id)) {
+                return kitty;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Update dialog when change in last message
      *
      * @param qbDialog
      */
-    public void updatedDialog(final QBDialog qbDialog) {
+    public void updatedDialog(final QBChatDialog qbDialog, int index) {
         try {
-            new BaseAsyncTask<Void, Void, Void>() {
-                boolean isCreated = true;
-                private Kitty kitty = null;
-                private int index = 0;
-                private boolean isUpdated = true;
-
-                @Override
-                public Void performInBackground(Void... params) throws Exception {
-                    AppLog.d(TAG, "updatedDialog::" + new Gson().toJson(qbDialog));
-
-                    try {
-                        String qbLastMessage = qbDialog.getLastMessage();
-                        for (int i = 0; i < getList().size(); i++) {
-                            Kitty kitty = getList().get(i);
-                            String groupLastMessage = kitty.getQbDialog().getLastMessage();
-                            if (kitty.getQbDialog().getDialogId().equals(qbDialog.getDialogId())) {
-                                // Don't update if no changes in last message
-                                if (qbLastMessage != null && !groupLastMessage.equals(qbLastMessage)) {
-                                    this.kitty = kitty;
-                                    index = i;
-                                    isCreated = false;
-                                    break;
-                                } else {
-                                    this.kitty = kitty;
-                                    isUpdated = false;
-                                    isCreated = false;
-                                    break;
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+            String qbLastMessage = qbDialog.getLastMessage();
+            if (index == -1) {
+                Kitty kitty = isPrivateDialogExist(qbDialog.getOccupants());
+                if (kitty == null) {
+                    if (qbLastMessage != null && qbLastMessage.length() > 0) {
+                        addCreatedDialog(qbDialog);
                     }
-                    return null;
+                } else { // update private dialog
+                    setOnTopOfList(qbDialog, kitty.getCurrentPosition(), kitty);
                 }
-
-                @Override
-                public void onResult(Void aVoid) {
-                    try {
-                        String qbLastMessage = qbDialog.getLastMessage();
-                        if (isCreated) {
-                            if (qbLastMessage != null && qbLastMessage.length() > 0) {
-                                Log.d(TAG, "isCreated ");
-                                addCreatedDialog(qbDialog);
-                            }
-                        } else if (!isCreated && isUpdated) {
-                            remove(index);
-                            kitty.setQbDialog(qbDialog);
-                            addAt(0, kitty);
-                            notifyDataSetChanged();
-                        } else {
-                            if (kitty != null) {
-                                kitty.setQbDialog(qbDialog);
-                                notifyDataSetChanged();
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+            } else {
+                Kitty kitty = getItem(index);
+                String previousMsg = kitty.getQbDialog().getLastMessage();
+                if (qbLastMessage != null && !previousMsg.equals(qbLastMessage)) {
+                    setOnTopOfList(qbDialog, index, kitty);
+                } else {
+                    if (kitty != null) {
+                        kitty.setQbDialog(qbDialog);
+                        notifyDataSetChanged();
                     }
                 }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        try {
-//
-//            AppLog.d(TAG, "updatedDialog::" + new Gson().toJson(qbDialog));
-//            boolean isCreated = true;
-//            String qbLastMessage = qbDialog.getLastMessage();
-//            for (int i = 0; i < getList().size(); i++) {
-//                Kitty kitty = getList().get(i);
-//                String groupLastMessage = kitty.getQbDialog().getLastMessage();
-//                if (kitty.getQbDialog().getDialogId().equals(qbDialog.getDialogId())) {
-//                    // Don't update if no changes in last message
-//                    if (qbLastMessage != null && !groupLastMessage.equals(qbLastMessage)) {
-//                        remove(i);
-//                        kitty.setQbDialog(qbDialog);
-//                        addAt(0, kitty);
-//                        notifyDataSetChanged();
-//                        isCreated = false;
-//                        break;
-//                    } else {
-//                        isCreated = false;
-//                        break;
-//                    }
-//                }
-//            }
-//            AppLog.d(TAG, "Last Message::" + qbLastMessage);
-//            // add new created dialog into list if last message created
-//            if (isCreated) {
-//                if (qbLastMessage != null && qbLastMessage.length() > 0) {
-//                    Log.d(TAG, "isCreated ");
-//                    addCreatedDialog(qbDialog);
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+    }
+
+    private void setOnTopOfList(QBChatDialog dialog, int index, Kitty kitty) {
+        AppLog.e(TAG, "setOnTopOfList: ");
+        remove(index);
+        kitty.setQbDialog(dialog);
+        addAt(0, kitty);
+        kitty.setCurrentPosition(0);
+        notifyDataSetChanged();
     }
 
     /**
@@ -210,7 +195,7 @@ public class ChatRecyclerAdapter extends BaseSelectedRecyclerViewAdapter<Kitty>
             AppLog.d(TAG, "updatedGroupChat: " + group.getGroup().getName());
             for (int i = 0; i < getList().size(); i++) {
                 Kitty kitty = getList().get(i);
-                QBDialog qbDialog = group.getQbDialog();
+                QBChatDialog qbDialog = group.getQbDialog();
 
                 if (kitty.getQbDialog().getDialogId().equals(qbDialog.getDialogId())) {
                     // Don't update if no changes in last message
@@ -245,20 +230,31 @@ public class ChatRecyclerAdapter extends BaseSelectedRecyclerViewAdapter<Kitty>
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View convertView = inflater.inflate(R.layout.row_chat_list, null, false);
-        return new ChatHolder(convertView);
+        if (viewType == FOOTER_VIEW) {
+            View convertView = inflater.inflate(R.layout.list_footer, parent, false);
+            return new FooterHolder(convertView);
+        } else {
+            View convertView = inflater.inflate(R.layout.row_chat_list, null, false);
+            return new ChatHolder(convertView);
+        }
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        ChatHolder chatHolder = (ChatHolder) holder;
-        Kitty gc = getItem(position);
-        gc.setChecked(isSelected(gc));
-        chatHolder.setPosition(position);
-        chatHolder.bind(getItem(position));
-        holder.itemView.setActivated(gc.isChecked());
-        chatHolder.startItemSelectionAnimation(gc);
-        downloadMore(position);
+        if (holder instanceof FooterHolder) {
+            FooterHolder footerHolder = (FooterHolder) holder;
+            footerHolder.bind(dataMsg);
+        } else {
+            ChatHolder chatHolder = (ChatHolder) holder;
+            Kitty gc = getItem(position);
+            gc.setChecked(isSelected(gc));
+            gc.setCurrentPosition(position);
+            chatHolder.setPosition(position);
+            chatHolder.bind(getItem(position));
+            holder.itemView.setActivated(gc.isChecked());
+            chatHolder.startItemSelectionAnimation(gc);
+            downloadMore(position);
+        }
     }
 
     @Override
@@ -345,6 +341,19 @@ public class ChatRecyclerAdapter extends BaseSelectedRecyclerViewAdapter<Kitty>
         return false;
     }
 
+    class FooterHolder extends ViewHolder {
+        private TextView txtDataMsg;
+
+        public FooterHolder(View itemView) {
+            super(itemView);
+            txtDataMsg = (TextView) itemView;
+        }
+
+        public void bind(String msg) {
+            txtDataMsg.setText(msg);
+        }
+    }
+
     class ChatHolder extends ViewHolder {
         CustomTextViewBold txtChatTitle;
         CustomTextViewNormal txtChatLastMessage;
@@ -376,9 +385,9 @@ public class ChatRecyclerAdapter extends BaseSelectedRecyclerViewAdapter<Kitty>
                 @Override
                 public void onClick(View v) {
                     Kitty kitty = (Kitty) v.getTag();
-                    QBDialog dialog = kitty.getQbDialog();
                     ChatActivity.startForResult((Activity) itemView.getContext(),
-                            AppConstant.REQUEST_UPDATE_DIALOG, kitty.getId(), null);
+                            AppConstant.REQUEST_UPDATE_DIALOG, kitty.getId(),
+                            null, kitty.getSelectedItemPosition());
                 }
             });
 
@@ -428,7 +437,7 @@ public class ChatRecyclerAdapter extends BaseSelectedRecyclerViewAdapter<Kitty>
 
         public void bind(Kitty kitty) {
             try {
-                QBDialog dialog = kitty.getQbDialog();
+                QBChatDialog dialog = kitty.getQbDialog();
                 if (dialog != null && Utils.isValidString(dialog.getName()))
                     setChatTitle(dialog.getName());
                 if (dialog != null && dialog.getLastMessage() != null)
@@ -454,7 +463,7 @@ public class ChatRecyclerAdapter extends BaseSelectedRecyclerViewAdapter<Kitty>
 
         private void setPrivateAndKittyAttribute(Kitty kitty) {
             try {
-                QBDialog dialog = kitty.getQbDialog();
+                QBChatDialog dialog = kitty.getQbDialog();
                 setProfileImage(dialog.getPhoto());
                 ChatData chatData = kitty.getGroup();
                 if (chatData != null && Utils.isValidString(chatData.getGroupImage()))

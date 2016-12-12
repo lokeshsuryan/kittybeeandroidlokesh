@@ -1,8 +1,10 @@
 package com.kittyapplication.ui.viewmodel;
 
 import android.app.ProgressDialog;
+import android.location.Location;
 
 import com.google.gson.Gson;
+import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
 import com.kittyapplication.model.PromotionalDao;
 import com.kittyapplication.model.ServerResponse;
@@ -10,6 +12,7 @@ import com.kittyapplication.rest.Singleton;
 import com.kittyapplication.ui.activity.PromotionalActivity;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
+import com.kittyapplication.utils.PreferanceUtils;
 import com.kittyapplication.utils.Utils;
 
 import java.util.List;
@@ -26,24 +29,37 @@ public class PromotionalViewModel {
     private static final String TAG = PromotionalViewModel.class.getSimpleName();
     private PromotionalActivity mActivity;
     private ProgressDialog mDialog;
+    private Call<ServerResponse<List<PromotionalDao>>> mAPIcall;
 
     public PromotionalViewModel(PromotionalActivity activity) {
         mActivity = activity;
     }
 
 
-    public void initRequest(int pos) {
+    public void initRequest(int pos, boolean isLoaderVisible) {
         if (Utils.checkInternetConnection(mActivity)) {
-            showDialog();
+            if (isLoaderVisible) {
+                showDialog();
+            }
             String id;
             if (pos < 5) {
                 id = String.valueOf(pos + 1);
             } else {
                 id = mActivity.getResources().getString(R.string.special);
             }
-            Call<ServerResponse<List<PromotionalDao>>> call =
-                    Singleton.getInstance().getRestOkClient().getPromotionalData(id);
-            call.enqueue(getPromotionalDataCallBack);
+            double latitude = 0.0;
+            double longitude = 0.0;
+            Location location = AppApplication.getInstance().getLocation();
+            if (location != null && location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
+                longitude = location.getLongitude();
+                latitude = location.getLatitude();
+            }
+            mAPIcall =
+                    Singleton.getInstance().getRestOkClient().getPromotionalData(id,
+                            latitude,
+                            longitude,
+                            PreferanceUtils.getLoginUserObject(mActivity).getUserID());
+            mAPIcall.enqueue(getPromotionalDataCallBack);
         } else {
             mActivity.showSnackbar(mActivity.getResources().getString(R.string.no_internet_available));
         }
@@ -111,5 +127,11 @@ public class PromotionalViewModel {
             mActivity.showSnackbar(mActivity.getResources().getString(R.string.server_error));
         }
     };
+
+    public void stopAPIcall() {
+        if (mAPIcall != null && !mAPIcall.isCanceled()) {
+            mAPIcall.cancel();
+        }
+    }
 
 }

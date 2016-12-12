@@ -518,7 +518,7 @@ public class Utils {
      * @return
      */
     public static String getDisplayNameByPhoneNumber(Context ctx, String phoneNumber) {
-        String displayName = "";
+        String displayName = phoneNumber;
         try {
             ContentResolver localContentResolver = ctx.getContentResolver();
             Cursor contactLookupCursor =
@@ -1216,5 +1216,11 @@ public class Utils {
         AppLog.e(TAG, "MERGED LIST = " + mergedList.size());
         return mergedList;
 
+    }
+
+    public static void openProfileActivity(Context ctx, String userID) {
+        Intent profileIntent = new Intent(ctx, ProfileActivity.class);
+        profileIntent.putExtra(AppConstant.USER_PROFILE_ID, userID);
+        ctx.startActivity(profileIntent);
     }
 }

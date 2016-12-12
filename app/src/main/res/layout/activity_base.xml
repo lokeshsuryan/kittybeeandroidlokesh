@@ -10,7 +10,7 @@
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nvView"
-        android:layout_width="wrap_content"
+        android:layout_width="304dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/drawer_bg"
@@ -20,21 +20,43 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
+            <!--   <LinearLayout
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_above="@+id/txtcurrentAppVersion"
+                   android:layout_alignParentTop="true"
+                   android:orientation="vertical">-->
+
+            <!--<include layout="@layout/drawer_hedder" />-->
+
+            <!--<ListView
+                android:id="@+id/lvDrawer"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_above="@+id/txtcurrentAppVersion"
-                android:layout_alignParentTop="true"
-                android:orientation="vertical">
+                android:dividerHeight="0.5dp" />-->
 
-                <include layout="@layout/drawer_hedder" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:weightSum="10">
 
-                <ListView
-                    android:id="@+id/lvDrawer"
+                <android.support.design.widget.NavigationView
+                    android:id="@+id/nav_view"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:dividerHeight="0.5dp" />
+                    android:layout_height="0dp"
+                    android:layout_gravity="top"
+                    android:layout_weight="10"
+                    android:background="@color/drawer_bg"
+                    android:fitsSystemWindows="false"
+                    app:headerLayout="@layout/drawer_hedder"
+                    app:itemBackground="@android:color/transparent"
+                    app:itemIconTint="@color/white"
+                    app:itemTextColor="@color/white"
+                    app:menu="@menu/drawer_menu" />
             </LinearLayout>
+
+            <!--</LinearLayout>-->
 
             <com.kittyapplication.custom.CustomTextViewNormal
                 android:id="@+id/txtcurrentAppVersion"

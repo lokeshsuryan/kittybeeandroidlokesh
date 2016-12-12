@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,6 +22,7 @@ import com.kittyapplication.model.ContactDao;
 import com.kittyapplication.ui.view.DividerItemDecoration;
 import com.kittyapplication.ui.viewmodel.ContactViewModel;
 import com.kittyapplication.utils.AppLog;
+import com.kittyapplication.utils.Utils;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ import java.util.List;
  * Created by Pintu Riontech on 8/8/16.
  * vaghela.pintu31@gmail.com
  */
-public class ContactsFragment extends Fragment {
+public class ContactsFragment extends BaseFragment {
     private static final String TAG = ContactsFragment.class.getSimpleName();
     private View mRootView;
     private SwipeRefreshLayout mRefreshLayout;
@@ -225,6 +225,13 @@ public class ContactsFragment extends Fragment {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void reloadData() {
+        if (mAdapter != null && Utils.isValidList(mAdapter.getList())) {
+            mAdapter.reloadData();
+        }
     }
 
 }

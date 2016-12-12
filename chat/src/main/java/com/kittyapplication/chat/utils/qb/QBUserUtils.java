@@ -1,14 +1,8 @@
 package com.kittyapplication.chat.utils.qb;
 
-import android.content.ContentResolver;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.kittyapplication.chat.utils.ImageLoaderUtils;
-import com.kittyapplication.core.CoreApp;
 import com.quickblox.content.QBContent;
 import com.quickblox.content.model.QBFile;
 import com.quickblox.core.QBEntityCallback;
@@ -31,7 +25,7 @@ public class QBUserUtils {
             Log.d(TAG, "File upload url" + uri);
 //            File file = new File(ImageLoaderUtils.getPath(Uri.parse(uri)));
 //        Log.d(TAG, "File path " + file.getAbsolutePath());
-            QBContent.uploadFileTask(new File(uri), false, null, new QBEntityCallback<QBFile>() {
+           /* QBContent.uploadFileTask(new File(uri), false, null, new QBEntityCallback<QBFile>() {
                 @Override
                 public void onSuccess(QBFile qbFile, Bundle params) {
                     Log.d(TAG, "Uploaded QBFile " + qbFile.toString());
@@ -49,20 +43,63 @@ public class QBUserUtils {
                 public void onProgressUpdate(int progress) {
                     Log.e(TAG, "Uploaded QBFile progress" + progress);
                 }
+            });*/
+
+
+            Boolean fileIsPublic = false;
+            QBContent.uploadFileTask(new File(uri), false, null, new QBProgressCallback() {
+                @Override
+                public void onProgressUpdate(int progress) {
+                    Log.e(TAG, "Uploaded QBFile progress" + progress);
+                }
+            }).performAsync(new QBEntityCallback<QBFile>() {
+
+                @Override
+                public void onSuccess(QBFile qbFile, Bundle params) {
+                    Log.d(TAG, "Uploaded QBFile " + qbFile.toString());
+                    int uploadedFileID = qbFile.getId();
+                    user.setFileId(uploadedFileID);
+                    updateUserProfile(user, callback);
+                }
+
+                @Override
+                public void onError(QBResponseException errors) {
+                    Log.e(TAG, "Uploaded QBFile " + errors.getMessage());
+                }
             });
         }
     }
 
-    public static void downloadUserProfilePicture(int profileId, QBEntityCallback<InputStream> callback) {
-        QBContent.downloadFileById(profileId, callback, new QBProgressCallback() {
+    public static void downloadUserProfilePicture(int profileId,
+                                                  QBEntityCallback<InputStream> callback) {
+       /* QBContent.downloadFileById(profileId, new QBProgressCallback() {
             @Override
             public void onProgressUpdate(int progress) {
+
+            }
+        });*/
+
+        Bundle params = new Bundle();
+        QBContent.downloadFileById(profileId, params, new QBProgressCallback() {
+            @Override
+            public void onProgressUpdate(int progress) {
+                Log.i(TAG, "progress: " + progress);
+            }
+        }).performAsync(new QBEntityCallback<InputStream>() {
+            @Override
+            public void onSuccess(InputStream inputStream, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
 
             }
         });
     }
 
     public static void updateUserProfile(QBUser user, QBEntityCallback<QBUser> callback) {
-        QBUsers.updateUser(user, callback);
+//        QBUsers.updateUser(user, callback);
+        QBUsers.updateUser(user).performAsync(callback);
     }
 }

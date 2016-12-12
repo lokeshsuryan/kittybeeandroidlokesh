@@ -10,14 +10,14 @@ import com.kittyapplication.model.CreateGroup;
 import com.kittyapplication.model.DiaryResponseDao;
 import com.kittyapplication.model.Kitty;
 import com.kittyapplication.model.NotesResponseDao;
+import com.kittyapplication.model.OfflineSummeryMembers;
 import com.kittyapplication.model.ParticipantDao;
-import com.kittyapplication.model.SummaryListDao;
 import com.kittyapplication.model.VenueResponseDao;
 import com.kittyapplication.providers.KittyBeeContract;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.PreferanceUtils;
 import com.kittyapplication.utils.Utils;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -213,19 +213,19 @@ public class Operations {
     /**
      * @param diaryResponseDao
      */
-    public static void insertIntoSummary(Context ctx, List<SummaryListDao> diaryResponseDao, String groupId) {
+    public static void insertIntoSummary(Context ctx, OfflineSummeryMembers diaryResponseDao, String groupId) {
         try {
-            if (Utils.isValidString(groupId) && Utils.isValidList(diaryResponseDao)) {
-                ContentValues values = new ContentValues();
-                values.put(SQLConstants.KEY_ID, groupId);
-                values.put(SQLConstants.KEY_DATA, new Gson().toJson(diaryResponseDao));
+//            if (Utils.isValidString(groupId) && Utils.isValidList(diaryResponseDao)) {
+            ContentValues values = new ContentValues();
+            values.put(SQLConstants.KEY_ID, groupId);
+            values.put(SQLConstants.KEY_DATA, new Gson().toJson(diaryResponseDao));
 //                ctx.getContentResolver().insert(KittyBeeContract.Summary.CONTENT_URI, values);
 
-                final MyQueryHandler queryHandler = new MyQueryHandler(ctx.getContentResolver());
-                queryHandler.startInsert(0, null, KittyBeeContract.Summary.CONTENT_URI, values);
-            } else {
-                AppLog.d(TAG, "insertIntoSummary is null at group id " + groupId);
-            }
+            final MyQueryHandler queryHandler = new MyQueryHandler(ctx.getContentResolver());
+            queryHandler.startInsert(0, null, KittyBeeContract.Summary.CONTENT_URI, values);
+//            } else {
+//                AppLog.d(TAG, "insertIntoSummary is null at group id " + groupId);
+//            }
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
@@ -285,7 +285,7 @@ public class Operations {
     /**
      *
      */
-    public static void insertQBDialog(ArrayList<QBDialog> dialogs, final Context mContext) {
+    public static void insertQBDialog(ArrayList<QBChatDialog> dialogs, final Context mContext) {
         if (dialogs != null && !dialogs.isEmpty()) {
             for (int i = 0; i < dialogs.size(); i++) {
                 ContentValues values = new ContentValues();
@@ -303,7 +303,7 @@ public class Operations {
     /**
      *
      */
-    public static void insertQBDialog(QBDialog dialogs, final Context mContext) {
+    public static void insertQBDialog(QBChatDialog dialogs, final Context mContext) {
         ContentValues values = new ContentValues();
         values.put(SQLConstants.KEY_ID, dialogs.getDialogId());
         values.put(SQLConstants.KEY_DATA, new Gson().toJson(dialogs));

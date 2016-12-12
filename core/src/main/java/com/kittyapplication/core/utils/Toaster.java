@@ -11,10 +11,14 @@ import android.widget.Toast;
 
 import com.kittyapplication.core.CoreApp;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 
 public class Toaster {
 
     @IntDef({Toast.LENGTH_LONG, Toast.LENGTH_SHORT})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface ToastLength {}
 
     public static void shortToast(View view, Window window, @StringRes int text) {

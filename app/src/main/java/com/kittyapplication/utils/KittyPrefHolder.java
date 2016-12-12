@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.kittyapplication.core.utils.SharedPrefsHelper;
 import com.kittyapplication.model.Kitty;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -83,7 +83,7 @@ public class KittyPrefHolder {
     public synchronized void update(Kitty kitty) {
         for (int i = 0; i < groupList.size(); i++) {
             Kitty chat = groupList.get(i);
-            QBDialog dialog = chat.getQbDialog();
+            QBChatDialog dialog = chat.getQbDialog();
             if (dialog.getDialogId().equals(kitty.getQbDialog().getDialogId())) {
                 groupList.set(i, kitty);
             }
@@ -94,7 +94,7 @@ public class KittyPrefHolder {
     public synchronized void updateByQBId(Kitty kitty) {
         for (int i = 0; i < groupList.size(); i++) {
             Kitty chat = groupList.get(i);
-            QBDialog dialog = chat.getQbDialog();
+            QBChatDialog dialog = chat.getQbDialog();
             if (dialog.getDialogId().equals(kitty.getQbDialog().getDialogId())) {
                 groupList.set(i, kitty);
             }
@@ -102,10 +102,10 @@ public class KittyPrefHolder {
         saveGroupChats(groupList);
     }
 
-    public synchronized void updateQBDialog(int index, QBDialog qbDialog) {
+    public synchronized void updateQBDialog(int index, QBChatDialog qbDialog) {
         for (int i = 0; i < groupList.size(); i++) {
             Kitty chat = groupList.get(i);
-            QBDialog dialog = chat.getQbDialog();
+            QBChatDialog dialog = chat.getQbDialog();
             if (dialog.getDialogId().equals(qbDialog.getDialogId())) {
                 groupList.remove(i);
                 chat.setQbDialog(qbDialog);
@@ -118,7 +118,7 @@ public class KittyPrefHolder {
     public synchronized void remove(Kitty kitty) {
         for (int i = 0; i < groupList.size(); i++) {
             Kitty chat = groupList.get(i);
-            QBDialog dialog = chat.getQbDialog();
+            QBChatDialog dialog = chat.getQbDialog();
             if (dialog.getDialogId().equals(kitty.getQbDialog().getDialogId())) {
                 groupList.remove(i);
             }
@@ -129,7 +129,7 @@ public class KittyPrefHolder {
     public synchronized void remove(String dialogId) {
         for (int i = 0; i < groupList.size(); i++) {
             Kitty chat = groupList.get(i);
-            QBDialog dialog = chat.getQbDialog();
+            QBChatDialog dialog = chat.getQbDialog();
             if (dialog.getDialogId().equals(dialogId)) {
                 groupList.remove(i);
             }
@@ -145,7 +145,7 @@ public class KittyPrefHolder {
     public Kitty getByDialog(String dialogId) {
         for (int i = 0; i < groupList.size(); i++) {
             Kitty chat = groupList.get(i);
-            QBDialog dialog = chat.getQbDialog();
+            QBChatDialog dialog = chat.getQbDialog();
             if (dialog.getDialogId().equals(dialogId)) {
                 return chat;
             }

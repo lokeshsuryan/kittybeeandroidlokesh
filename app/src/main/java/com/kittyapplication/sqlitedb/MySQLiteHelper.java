@@ -100,7 +100,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
                     SQLConstants.KEY_KITTY_ID, SQLConstants.KEY_DATA,
                     SQLConstants.KEY_TIMESTAMP, SQLConstants.KEY_IS_SYNC));
 
-            database.execSQL(getCreateTableQuery(SQLConstants.TABLE_SUMMARY, SQLConstants.KEY_ID,
+            database.execSQL(getCreateTableQuery(SQLConstants.TABLE_SUMMARY,
+                    SQLConstants.KEY_ID,
                     SQLConstants.KEY_DATA, SQLConstants.KEY_TIMESTAMP
                     , SQLConstants.KEY_IS_SYNC));
 
@@ -151,8 +152,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
 
-        if (oldVersion == 3) {
+        if (oldVersion == 4 || oldVersion == 3) {
             //upgrade from version 3 to 4
+            //upgrade from version 4 to 5
             db.execSQL(getDropQuery(SQLConstants.TABLE_GROUP));
             db.execSQL(getDropQuery(SQLConstants.TABLE_QB_DIALOGS));
             db.execSQL(getDropQuery(SQLConstants.TABLE_KITTIES));
@@ -366,7 +368,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      */
     public String getCreateGroupTableQuery(String tableName, String id, String groupId,
                                            String data, String deleted, String updated, String timeStamp) {
-        String query = String.format("CREATE TABLE %s (" +
+        String query = String.format("CREATE TABLE IF NOT EXISTS  %s (" +
                         " %s INTEGER PRIMARY KEY AUTOINCREMENT," +
                         " %s TEXT, %s TEXT, %s INTEGER DEFAULT 0," +
                         " %s INTEGER DEFAULT 0, %s TIMESTAMP DEFAULT CURRENT_TIMESTAMP )",
@@ -380,7 +382,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * @return query for creating table
      */
     public String getKittyCreateTableQuery() {
-        String query = "CREATE TABLE " + SQLConstants.TABLE_KITTIES + " ( " +
+        String query = "CREATE TABLE IF NOT EXISTS " + SQLConstants.TABLE_KITTIES + " ( " +
                 KittyBeeContract.Kitties._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 KittyBeeContract.Kitties.GROUP_ID + " TEXT," +
                 KittyBeeContract.Kitties.QB_DIALOG_ID + " TEXT," +
@@ -388,6 +390,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
                 KittyBeeContract.Kitties.QB_DIALOG + " TEXT," +
                 KittyBeeContract.Kitties.CLEAR_MESSAGE + " INTEGER DEFAULT 0, " +
                 KittyBeeContract.Kitties.DELETED + " INTEGER DEFAULT 0, " +
+                KittyBeeContract.Kitties.SYNCABLE + " INTEGER DEFAULT 0, " +
+                KittyBeeContract.Kitties.PRIVATE_CHAT_MEMBER_ID + " INTEGER DEFAULT 0, " +
+                KittyBeeContract.Kitties.LAST_MESSAGE_PAGE_NO + " INTEGER DEFAULT 0, " +
                 KittyBeeContract.Kitties.QB_LAST_MSG_TIMESTAMP + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
                 KittyBeeContract.Kitties.TIMESTAMP + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP )";
         return query;
@@ -399,7 +404,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * @return query for creating table
      */
     public String getCreateTableQuery(String tableName, String id, String data, String timeStamp, String isSync) {
-        String query = String.format("CREATE TABLE %s (%s TEXT, %s TEXT, %s TIMESTAMP DEFAULT CURRENT_TIMESTAMP , "
+        String query = String.format("CREATE TABLE IF NOT EXISTS  %s (%s TEXT, %s TEXT, %s TIMESTAMP DEFAULT CURRENT_TIMESTAMP , "
                         + " %s INTEGER DEFAULT 0 " + ")",
                 tableName, id, data, timeStamp, isSync);
         return query;
@@ -411,7 +416,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * @return query for creating table
      */
     public String getCreateTableQuery(String tableName, String id, String kittyId, String data, String timeStamp, String isSync) {
-        String query = String.format("CREATE TABLE %s (%s TEXT, %s TEXT, %s TEXT, " +
+        String query = String.format("CREATE TABLE IF NOT EXISTS  %s (%s TEXT, %s TEXT, %s TEXT, " +
                         "%s TIMESTAMP DEFAULT CURRENT_TIMESTAMP , " + " %s INTEGER DEFAULT 0 " + ")",
                 tableName, id, kittyId, data, timeStamp, isSync);
         return query;
@@ -424,7 +429,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      */
     public String getMessageCreateTableQuery() {
 
-        String query = "CREATE TABLE " + SQLConstants.TABLE_MESSAGE + " ( " +
+        String query = "CREATE TABLE IF NOT EXISTS  " + SQLConstants.TABLE_MESSAGE + " ( " +
                 KittyBeeContract.ChatMessage._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 KittyBeeContract.ChatMessage.KITTY_ID + " INTEGER, " +
                 KittyBeeContract.ChatMessage.MESSAGE_ID + " TEXT," +
@@ -448,7 +453,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     public String getChatGroupMemberCreateTableQuery(String tableName, String id,
                                                      String memberId, String memberName, String memberNumber,
                                                      String image, String timeStamp) {
-        String query = String.format("CREATE TABLE %s ("
+        String query = String.format("CREATE TABLE  IF NOT EXISTS  %s ("
                         + " %s INTEGER PRIMARY KEY AUTOINCREMENT,"
                         + " %s INTEGER, %s TEXT, %s TEXT, %s BLOB,"
                         + " %s TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",

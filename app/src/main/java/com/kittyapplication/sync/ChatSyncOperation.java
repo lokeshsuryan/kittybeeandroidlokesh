@@ -1,47 +1,44 @@
 package com.kittyapplication.sync;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.kittyapplication.chat.ui.models.QBMessage;
 import com.kittyapplication.chat.utils.SharedPreferencesUtil;
-import com.kittyapplication.chat.utils.chat.Chat;
 import com.kittyapplication.chat.utils.chat.ChatHelper;
-import com.kittyapplication.chat.utils.chat.GroupChatImpl;
-import com.kittyapplication.chat.utils.chat.MessageStatusListener;
-import com.kittyapplication.chat.utils.chat.PrivateChatImpl;
-import com.kittyapplication.chat.utils.chat.QBChatMessageListener;
-import com.kittyapplication.chat.utils.qb.QbDialogUtils;
 import com.kittyapplication.model.Kitty;
+import com.kittyapplication.rest.APIManager;
 import com.kittyapplication.sqlitedb.DBQueryHandler.OnQueryHandlerListener;
+import com.kittyapplication.sync.callback.DataSyncListener;
 import com.kittyapplication.ui.executor.ExecutorThread;
 import com.kittyapplication.ui.viewmodel.MainChatViewModel;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
-import com.quickblox.chat.QBChat;
 import com.quickblox.chat.QBChatService;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 
 /**
  * Created by MIT on 10/12/2016.
  */
-public class ChatSyncOperation implements MessageStatusListener {
+public class ChatSyncOperation {
     private static final String TAG = ChatSyncOperation.class.getSimpleName();
     private MainChatViewModel viewModel;
+    private HashMap<String, QBChatDialog> dialogMap;
 
     public ChatSyncOperation(Context context) {
         viewModel = new MainChatViewModel(context);
+        dialogMap = new HashMap<>();
     }
 
     public synchronized void syncCreatedDialog() {
@@ -56,25 +53,6 @@ public class ChatSyncOperation implements MessageStatusListener {
                     if (result != null && result.size() > 0) {
                         createDialog(result, 0);
                     }
-//                    for (final Kitty kitty : result) {
-//                        System.out.println("Local dialog::" + kitty.toString());
-//                        final QBDialog dialog = kitty.getQbDialog();
-//                        ChatHelper.getInstance().createDialog(dialog, new QBEntityCallback<QBDialog>() {
-//                            @Override
-//                            public void onSuccess(QBDialog qbdialog, Bundle bundle) {
-//                                System.out.println("Created dialog::" + qbdialog.toString());
-//                                // updated pending dialog with original data
-//                                viewModel.updateDialogByKittyId(kitty.getId(), qbdialog);
-//                                // update of all chat messages's dialogId with original dialogId
-//                                viewModel.updateMessageDialogId(dialog.getDialogId(), qbdialog.getDialogId());
-//                            }
-//
-//                            @Override
-//                            public void onError(QBResponseException e) {
-//
-//                            }
-//                        });
-//                    }
                 } catch (Exception e) {
                     AppLog.e(TAG, e.getMessage(), e);
                 }
@@ -90,15 +68,15 @@ public class ChatSyncOperation implements MessageStatusListener {
         try {
             final Kitty kitty = kitties.get(index);
 
-            final QBDialog dialog = kitty.getQbDialog();
+            final QBChatDialog dialog = kitty.getQbDialog();
             ExecutorThread executorThread = new ExecutorThread();
             executorThread.startExecutor();
             executorThread.postTask(new Runnable() {
                 @Override
                 public void run() {
-                    ChatHelper.getInstance().createDialog(dialog, new QBEntityCallback<QBDialog>() {
+                    ChatHelper.getInstance().createDialog(dialog, new QBEntityCallback<QBChatDialog>() {
                         @Override
-                        public void onSuccess(QBDialog qbdialog, Bundle bundle) {
+                        public void onSuccess(QBChatDialog qbdialog, Bundle bundle) {
                             System.out.println("Created dialog::" + qbdialog.toString());
                             // updated pending dialog with original data
                             viewModel.updateDialogByKittyId(kitty.getId(), qbdialog);
@@ -126,7 +104,7 @@ public class ChatSyncOperation implements MessageStatusListener {
             public void onResult(ArrayList<Kitty> result) {
                 try {
                     for (final Kitty kitty : result) {
-                        final QBDialog dialog = kitty.getQbDialog();
+                        final QBChatDialog dialog = kitty.getQbDialog();
                         ChatHelper.getInstance().deleteDialog(dialog, new QBEntityCallback<Void>() {
                             @Override
                             public void onSuccess(Void aVoid, Bundle bundle) {
@@ -186,24 +164,29 @@ public class ChatSyncOperation implements MessageStatusListener {
         }
     }
 
-    public synchronized void syncMessages() {
-        Log.e(TAG, "syncMessages: ");
+    public synchronized void sendPendingMessage() {
+        Log.e(TAG, "sendPendingMessage: ");
         try {
             if (QBChatService.getInstance().getGroupChatManager() != null) {
                 viewModel.loadPendingMessages(new OnQueryHandlerListener<ArrayList<QBChatMessage>>() {
                     @Override
                     public void onResult(ArrayList<QBChatMessage> result) {
                         if (result != null) {
-                            Chat chat = null;
                             for (final QBChatMessage message : result) {
-                                viewModel.fetchQBDialog(message.getDialogId(), new OnQueryHandlerListener<ArrayList<QBDialog>>() {
-                                    @Override
-                                    public void onResult(ArrayList<QBDialog> result) {
-                                        for (QBDialog dialog : result) {
-                                            sendMessage(dialog, message);
+                                if (dialogMap.containsKey(message.getDialogId())) {
+                                    QBChatDialog dialog = dialogMap.get(message.getDialogId());
+                                    sendMessage(dialog, message);
+                                } else {
+                                    viewModel.fetchQBDialog(message.getDialogId(), new OnQueryHandlerListener<ArrayList<QBChatDialog>>() {
+                                        @Override
+                                        public void onResult(ArrayList<QBChatDialog> result) {
+                                            for (QBChatDialog dialog : result) {
+                                                dialogMap.put(message.getDialogId(), dialog);
+                                                sendMessage(dialog, message);
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                }
                             }
                         }
                     }
@@ -213,7 +196,7 @@ public class ChatSyncOperation implements MessageStatusListener {
                 ChatHelper.getInstance().login(SharedPreferencesUtil.getQbUser(), new QBEntityCallback<Void>() {
                     @Override
                     public void onSuccess(Void aVoid, Bundle bundle) {
-                        syncMessages();
+                        sendPendingMessage();
                     }
 
                     @Override
@@ -227,23 +210,18 @@ public class ChatSyncOperation implements MessageStatusListener {
         }
     }
 
-    private void sendMessage(QBDialog dialog, QBChatMessage message) {
-        Chat chat = null;
+    private void sendMessage(QBChatDialog dialog, QBChatMessage message) {
         if (dialog == null)
             return;
         try {
             message.setDialogId(dialog.getDialogId());
             switch (dialog.getType()) {
                 case GROUP:
-                case PUBLIC_GROUP:
-                    chat = new GroupChatImpl(chatMessageListener, ChatSyncOperation.this);
-                    joinGroupChat(chat, dialog, message);
+                    joinGroupChat(dialog, message);
                     break;
 
                 case PRIVATE:
-                    chat = new PrivateChatImpl(chatMessageListener,
-                            QbDialogUtils.getOpponentIdForPrivateDialog(dialog), ChatSyncOperation.this);
-                    sendMessage(chat, message);
+                    sendDialogMessage(dialog, message);
                     break;
 
                 default:
@@ -255,106 +233,94 @@ public class ChatSyncOperation implements MessageStatusListener {
 
     }
 
-    protected void joinGroupChat(final Chat chat, QBDialog dialog, final QBChatMessage message) {
-        System.out.println("joinGroupChat");
+    protected void joinGroupChat(final QBChatDialog dialog, final QBChatMessage message) {
         try {
-            if (chat != null) {
-                ((GroupChatImpl) chat).joinGroupChat(dialog, new QBEntityCallback<Void>() {
-                    @Override
-                    public void onSuccess(Void result, Bundle b) {
-                        sendMessage(chat, message);
-                    }
+            ChatHelper.getInstance().join(dialog, new QBEntityCallback<Void>() {
+                @Override
+                public void onSuccess(Void result, Bundle b) {
+                    sendDialogMessage(dialog, message);
+                }
 
-                    @Override
-                    public void onError(QBResponseException e) {
-//                        progressBar.setVisibility(View.GONE);
-//                        snackbar = showErrorSnackbar(R.string.connection_error, e, null);
-                    }
-                });
-            }
+                @Override
+                public void onError(QBResponseException e) {
+                }
+            });
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
     }
-    private QBChatMessageListener chatMessageListener = new QBChatMessageListener() {
-        @Override
-        public void onQBChatMessageReceived(QBChat chat, QBChatMessage message) {
-            Log.e(TAG, "onQBChatMessageReceived: ");
-            try {
-//                String lastRecordId = (String) message.getProperty(AppConstant.LAST_INSERTED_ID);
-//                if (lastRecordId != null) {
-//                    int id = Integer.parseInt(lastRecordId);
-//                    viewModel.updateSent(message, id);
-//                }
-                viewModel.updateMessage(message);
-            } catch (Exception e) {
-                AppLog.e(TAG, e.getMessage(), e);
-            }
-        }
-    };
 
-    private void sendMessage(Chat chat, QBChatMessage message) {
-        Log.e(TAG, "sendMessage: ");
-        if (chat != null) {
-            try {
-                chat.sendMessage(message);
-            } catch (XMPPException e) {
-                AppLog.e(TAG, e.getMessage(), e);
-            } catch (SmackException.NotConnectedException e) {
-                AppLog.e(TAG, e.getMessage(), e);
-            }
+    private void sendDialogMessage(QBChatDialog dialog, QBChatMessage message) {
+        try {
+            dialog.sendMessage(message);
+        } catch (SmackException.NotConnectedException e) {
         }
-//        try {
-//            if (chat != null) {
-//                chat.release();
-//            }
-//        } catch (XMPPException e) {
-//            Log.e(TAG, "Failed to release chat", e);
-//        }
     }
+
 
     public synchronized void sendBroadCast(Context context) {
         Intent broadcastIntent = new Intent(AppConstant.NETWORK_STAT_ACTION);
         context.sendBroadcast(broadcastIntent);
     }
 
-    @Override
-    public void onMessageFail(QBChatMessage chatMessage) {
-        Log.e(TAG, "onMessageFail: ");
-        try {
-            String lastRecordId = (String) chatMessage.getProperty(AppConstant.LAST_INSERTED_ID);
-            if (lastRecordId != null) {
-                int id = Integer.parseInt(lastRecordId);
-                viewModel.updateFail(chatMessage, id);
+    public synchronized void syncMessages() {
+        AppLog.e(TAG, "syncMessages: ");
+        viewModel.fetchSyncableKitties(0, new OnQueryHandlerListener<ArrayList<Kitty>>() {
+            @Override
+            public void onResult(ArrayList<Kitty> result) {
+                AppLog.e(TAG, "fetchSyncableKitties: " + result.size());
+                if (!result.isEmpty()) {
+                    startMessageSyncing(result, 0);
+                }
             }
-        } catch (Exception e) {
-            AppLog.e(TAG, e.getMessage(), e);
-        }
+        });
     }
 
-    @Override
-    public void onMessageSent(QBChatMessage chatMessage) {
-        Log.e(TAG, "onMessageSent: ");
-        try {
-            String lastRecordId = (String) chatMessage.getProperty(AppConstant.LAST_INSERTED_ID);
-            if (lastRecordId != null) {
-                int id = Integer.parseInt(lastRecordId);
-                viewModel.updateSent(chatMessage, id);
+    private void startMessageSyncing(final ArrayList<Kitty> result, final int currentIndex) {
+        AppLog.e(TAG, "startMessageSyncing: ");
+        Kitty kitty = result.get(currentIndex);
+        QBChatDialog dialog = kitty.getQbDialog();
+        int page = kitty.getLastMessagePageNo();
+        syncDialogMessages(kitty.getId(), dialog, 0, new DataSyncListener() {
+            @Override
+            public void onCompleted(int itemCount) {
+                if (currentIndex != (result.size() - 1))
+                    startMessageSyncing(result, currentIndex + 1);
             }
-        } catch (Exception e) {
-            AppLog.e(TAG, e.getMessage(), e);
-        }
+        });
     }
 
-    @Override
-    public void onMessageDelivered(String messageID, String dialogID, Integer occupantsID) {
-        Log.e(TAG, "onMessageDelivered: ");
-        viewModel.updateRead(messageID);
-    }
+    public void syncDialogMessages(final int kittyId, final QBChatDialog dialog, final int page, final DataSyncListener listener) {
+        AppLog.e(TAG, "syncDialogMessages: ");
+        APIManager.getInstance().loadChatHistory(dialog, page, new QBEntityCallback<ArrayList<QBChatMessage>>() {
+            @Override
+            public void onSuccess(ArrayList<QBChatMessage> qbChatMessages, Bundle bundle) {
+                if (!qbChatMessages.isEmpty()) {
+                    for (QBChatMessage chatMessage : qbChatMessages) {
+                        try {
+                            QBMessage msg = new QBMessage();
+                            msg.setMessage(chatMessage);
+                            msg.setKittyId(kittyId);
+                            msg.generateMessageStatus((ArrayList<Integer>) dialog.getOccupants());
+                            viewModel.saveMessage(msg, kittyId);
+                            if (page == 0)
+                                viewModel.updatePageNoWithDisableSync(qbChatMessages.size(), kittyId);
+                            else
+                                viewModel.updatePageNoWithDisableSync(page, kittyId);
+                        } catch (Exception e) {
+                            AppLog.e(TAG, e.getMessage(), e);
+                        }
+                    }
+                    listener.onCompleted(qbChatMessages.size());
+                } else {
+                    listener.onCompleted(qbChatMessages.size());
+                }
+            }
 
-    @Override
-    public void onMessageRead(String messageID, String dialogID, Integer occupantsID) {
-        Log.e(TAG, "onMessageRead: ");
-        viewModel.updateDelivered(messageID);
+            @Override
+            public void onError(QBResponseException e) {
+                listener.onCompleted(0);
+            }
+        });
     }
 }

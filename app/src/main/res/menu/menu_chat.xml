@@ -2,45 +2,45 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/menu_action_diary"
-        android:icon="@drawable/ic_menu_diary_chat"
-        android:orderInCategory="100"
-        android:title="@string/diary_notes"
-        android:visible="false"
-        app:showAsAction="always" />
+    <!--<item-->
+        <!--android:id="@+id/menu_action_diary"-->
+        <!--android:icon="@drawable/ic_dairy_summary"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="@string/diary_notes"-->
+        <!--android:visible="false"-->
+        <!--app:showAsAction="always" />-->
 
-    <item
-        android:id="@+id/menu_action_kitty_rule"
-        android:icon="@drawable/ic_kitty_rules"
-        android:orderInCategory="100"
-        android:title="@string/kitty_rules"
-        android:visible="false"
-        app:showAsAction="always" />
+    <!--<item-->
+        <!--android:id="@+id/menu_action_kitty_rule"-->
+        <!--android:icon="@drawable/ic_kitty_rules"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="@string/kitty_rules"-->
+        <!--android:visible="false"-->
+        <!--app:showAsAction="always" />-->
 
-    <item
-        android:id="@+id/menu_action_setting"
-        android:icon="@drawable/ic_setting"
-        android:orderInCategory="100"
-        android:title="@string/menu_action_setting"
-        android:visible="false"
-        app:showAsAction="always" />
+    <!--<item-->
+        <!--android:id="@+id/menu_action_setting"-->
+        <!--android:icon="@drawable/ic_setting"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="@string/menu_action_setting"-->
+        <!--android:visible="false"-->
+        <!--app:showAsAction="always" />-->
 
-    <item
-        android:id="@+id/menu_action_media"
-        android:icon="@drawable/ic_media"
-        android:orderInCategory="100"
-        android:title="@string/menu_action_view_media"
-        android:visible="false"
-        app:showAsAction="always" />
+    <!--<item-->
+        <!--android:id="@+id/menu_action_media"-->
+        <!--android:icon="@drawable/ic_media"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="@string/menu_action_view_media"-->
+        <!--android:visible="false"-->
+        <!--app:showAsAction="always" />-->
 
-    <item
-        android:id="@+id/menu_action_profile"
-        android:icon="@drawable/ic_drawer_my_profile"
-        android:orderInCategory="100"
-        android:title="@string/menu_action_view_profile"
-        android:visible="false"
-        app:showAsAction="always" />
+    <!--<item-->
+        <!--android:id="@+id/menu_action_profile"-->
+        <!--android:icon="@drawable/ic_drawer_my_profile"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="@string/menu_action_view_profile"-->
+        <!--android:visible="false"-->
+        <!--app:showAsAction="always" />-->
 
     <item
         android:id="@+id/menu_action_clear_chat"

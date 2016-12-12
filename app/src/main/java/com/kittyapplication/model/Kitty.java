@@ -3,7 +3,7 @@ package com.kittyapplication.model;
 import android.view.View;
 
 import com.kittyapplication.core.utils.StringUtils;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 
 /**
  * Created by Scorpion on 24-08-2016.
@@ -13,16 +13,18 @@ public class Kitty {
     private String dialogId;
     private boolean isChecked;
     private boolean isAnimated;
-    private QBDialog qbDialog;
+    private QBChatDialog qbDialog;
     private ChatData group;
+    private int lastMessagePageNo;
     private int selectedItemPosition;
     private View selectedItemView;
+    private int currentPosition;
 
     public void setGroup(ChatData group) {
         this.group = group;
     }
 
-    public void setQbDialog(QBDialog qbDialog) {
+    public void setQbDialog(QBChatDialog qbDialog) {
         this.qbDialog = qbDialog;
     }
 
@@ -30,7 +32,7 @@ public class Kitty {
         return group;
     }
 
-    public QBDialog getQbDialog() {
+    public QBChatDialog getQbDialog() {
         return qbDialog;
     }
 
@@ -71,6 +73,14 @@ public class Kitty {
         isAnimated = animated;
     }
 
+    public void setLastMessagePageNo(int lastMessagePageNo) {
+        this.lastMessagePageNo = lastMessagePageNo;
+    }
+
+    public int getLastMessagePageNo() {
+        return lastMessagePageNo;
+    }
+
     public int getSelectedItemPosition() {
         return selectedItemPosition;
     }
@@ -85,5 +95,13 @@ public class Kitty {
 
     public View getSelectedItemView() {
         return selectedItemView;
+    }
+
+    public void setCurrentPosition(int currentPosition) {
+        this.currentPosition = currentPosition;
+    }
+
+    public int getCurrentPosition() {
+        return currentPosition;
     }
 }

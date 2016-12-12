@@ -27,8 +27,8 @@ import android.widget.RelativeLayout;
 import com.kittyapplication.chat.R;
 import com.kittyapplication.chat.custom.CircluarProgressBarWithNumber;
 import com.kittyapplication.chat.utils.ImageLoaderUtils;
+import com.kittyapplication.core.CoreApp;
 import com.kittyapplication.core.utils.ResourceUtils;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 
 import java.io.File;
@@ -55,7 +55,7 @@ public class AttachmentZoomActivity extends AppCompatActivity {
     public static void startMediaActivity(Activity activity, String url, View view) {
         Intent intent = new Intent(activity, AttachmentZoomActivity.class);
         intent.putExtra(AttachmentZoomActivity.EXTRA_URL, url);
-        String transitionName = ResourceUtils.getString(R.string.zoom_image_transition);
+        String transitionName = ResourceUtils.getString(CoreApp.getInstance(), R.string.zoom_image_transition);
         ActivityOptionsCompat options = ActivityOptionsCompat.
                 makeSceneTransitionAnimation(activity, view, transitionName);
         ActivityCompat.startActivity(activity, intent, options.toBundle());

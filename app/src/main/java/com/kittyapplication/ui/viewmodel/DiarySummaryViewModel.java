@@ -8,8 +8,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.kittyapplication.R;
+import com.kittyapplication.model.OfflineSummeryMembers;
 import com.kittyapplication.model.ServerResponse;
 import com.kittyapplication.model.SummaryListDao;
 import com.kittyapplication.providers.KittyBeeContract;
@@ -17,10 +17,9 @@ import com.kittyapplication.rest.Singleton;
 import com.kittyapplication.sqlitedb.SQLConstants;
 import com.kittyapplication.ui.activity.DiarySummaryActivity;
 import com.kittyapplication.utils.AlertDialogUtils;
+import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.Utils;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -58,9 +57,13 @@ public class DiarySummaryViewModel {
             if (response.code() == 200) {
                 ServerResponse<List<SummaryListDao>> serverResponse = response.body();
                 if (serverResponse.getData() != null && !serverResponse.getData().isEmpty()) {
-                    insertIntoSummary(serverResponse.getData());
+                    OfflineSummeryMembers members = new OfflineSummeryMembers();
+                    members.setData(serverResponse.getData());
+                    members.setKittynext(serverResponse.getKittyNext());
+                    members.setCount(String.valueOf(serverResponse.getCount()));
+                    insertIntoSummary(members);
                     mCount = serverResponse.getCount();
-                    mActivity.setHostList(serverResponse.getData());
+                    mActivity.setHostList(members);
                 } else {
 //                    AlertDialogUtils.showServerError(mActivity.getResources().getString(R.string.zero_host_found), mActivity);
                 }
@@ -80,7 +83,7 @@ public class DiarySummaryViewModel {
     /**
      * @param diaryResponseDao
      */
-    private void insertIntoSummary(List<SummaryListDao> diaryResponseDao) {
+    private void insertIntoSummary(OfflineSummeryMembers diaryResponseDao) {
         ContentValues values = new ContentValues();
         values.put(SQLConstants.KEY_ID, mGroupId);
         values.put(SQLConstants.KEY_DATA, new Gson().toJson(diaryResponseDao));
@@ -91,10 +94,11 @@ public class DiarySummaryViewModel {
     /**
      *
      */
-    private class SyncTask extends AsyncTask<String, Void, List<SummaryListDao>> {
+    private class SyncTask extends AsyncTask<String, Void, OfflineSummeryMembers> {
         @Override
-        protected List<SummaryListDao> doInBackground(String... params) {
-            List<SummaryListDao> summaryList = new ArrayList<>();
+        protected OfflineSummeryMembers doInBackground(String... params) {
+//            List<SummaryListDao> summaryList = new ArrayList<>();
+            OfflineSummeryMembers members = new OfflineSummeryMembers();
             Uri uri = ContentUris.withAppendedId(KittyBeeContract.Summary.CONTENT_URI,
                     Long.valueOf(params[0]));
             ContentResolver resolver =
@@ -106,38 +110,48 @@ public class DiarySummaryViewModel {
                     null,                           // any wildcard substitutions
                     null);                          // the sort order without the SORT BY keyword
 
-            if (cursor != null && cursor.getCount() > 0) {
+            if (cursor != null && cursor.getCount() != -1 && cursor.getCount() > 0) {
                 // show data from db
-                Gson gson = new Gson();
-                Type listType = new TypeToken<List<SummaryListDao>>() {
-                }.getType();
+//                AppLog.d(TAG, cursor.getString(1));
+//                AppLog.d(TAG, cursor.getString(0));
+//                AppLog.d(TAG, cursor.getString(2));
+
+                /*Type listType = new TypeToken<List<SummaryListDao>>() {
+                }.getType();*/
                 while (cursor.moveToNext()) {
-                    summaryList = gson.fromJson(cursor.getString(1), listType);
+                    Gson gson = new Gson();
+                    members = gson.fromJson(cursor.getString(1), OfflineSummeryMembers.class);
+//                    summaryList = gson.fromJson(cursor.getString(1), listType);
                 }
                 cursor.close();
             }
-            return summaryList;
+            return members;
         }
 
         @Override
-        protected void onPostExecute(List<SummaryListDao> summeryList) {
-            super.onPostExecute(summeryList);
-            if (Utils.isValidList(summeryList)) {
-                mActivity.setHostList(summeryList);
-                flag = true;
-                mActivity.hideProgressDialog();
-            }
-
-            if (Utils.checkInternetConnection(mActivity)) {
-                Call<ServerResponse<List<SummaryListDao>>> call = Singleton.getInstance().
-                        getRestOkClient().hostList(mGroupId);
-                call.enqueue(getHostListCallback);
-            } else {
-                if (!flag) {
+        protected void onPostExecute(OfflineSummeryMembers members) {
+            super.onPostExecute(members);
+            try {
+                AppLog.d(TAG, new Gson().toJson(members));
+                if (members != null && Utils.isValidList(members.getData())) {
+                    mActivity.setHostList(members);
+                    flag = true;
                     mActivity.hideProgressDialog();
-                    AlertDialogUtils.showServerError(mActivity.getResources().
-                            getString(R.string.no_internet_available), mActivity);
                 }
+
+                if (Utils.checkInternetConnection(mActivity)) {
+                    Call<ServerResponse<List<SummaryListDao>>> call = Singleton.getInstance().
+                            getRestOkClient().hostList(mGroupId);
+                    call.enqueue(getHostListCallback);
+                } else {
+                    if (!flag) {
+                        mActivity.hideProgressDialog();
+                        AlertDialogUtils.showServerError(mActivity.getResources().
+                                getString(R.string.no_internet_available), mActivity);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

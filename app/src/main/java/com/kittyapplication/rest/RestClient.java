@@ -78,7 +78,10 @@ public interface RestClient {
 
 
     @POST("promotion/{id}")
-    Call<ServerResponse<List<PromotionalDao>>> getPromotionalData(@Path("id") String id);
+    Call<ServerResponse<List<PromotionalDao>>>
+    getPromotionalData(@Path("id") String id, @Query("lat") double latitude,
+                       @Query("lng") double longitude,
+                       @Query("user_id") String userID);
 
 
     @POST("contact/{userId}")
@@ -219,4 +222,9 @@ public interface RestClient {
 
     @POST("version")
     Call<ServerResponse> getUpdatedVersion();
+
+    @POST("checkDevice/{userId}")
+    Call<ServerResponse> updateGCM(@Path("userId") String userId,
+                                   @Query("deviceID") String gcmID,
+                                   @Query("deviceType") String deviceType);
 }

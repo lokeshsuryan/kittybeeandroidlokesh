@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.ColorRes;
 import android.support.annotation.RequiresApi;
@@ -24,7 +23,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.kittyapplication.chat.R;
 import com.kittyapplication.chat.custom.CircluarProgressBarWithNumber;
 import com.kittyapplication.chat.ui.activity.AttachmentZoomActivity;
@@ -34,13 +32,13 @@ import com.kittyapplication.chat.utils.ImageLoaderUtils;
 import com.kittyapplication.chat.utils.SharedPreferencesUtil;
 import com.kittyapplication.chat.utils.TimeUtils;
 import com.kittyapplication.chat.utils.qb.PaginationHistoryListener;
-import com.kittyapplication.core.async.BaseAsyncTask;
 import com.kittyapplication.core.ui.adapter.BaseListAdapter;
 import com.kittyapplication.core.utils.ResourceUtils;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.quickblox.chat.model.QBAttachment;
 import com.quickblox.chat.model.QBChatMessage;
+import com.quickblox.core.helper.Utils;
 import com.quickblox.users.model.QBUser;
 
 import java.io.File;
@@ -67,6 +65,7 @@ public class ChatMessageAdapter extends BaseListAdapter<QBMessage> implements St
     private Map<File, Integer> fileUploadProgressMap;
     private Map<String, Integer> currentFileUploadedMap;
     private Map<Integer, Object[]> senderAvatar;
+    private Context mContext;
     private boolean isCurrentFileUploaded;
 
     public ChatMessageAdapter(Context context, List<QBMessage> chatMessages) {
@@ -74,6 +73,7 @@ public class ChatMessageAdapter extends BaseListAdapter<QBMessage> implements St
         fileUploadProgressMap = Collections.synchronizedMap(new HashMap<File, Integer>());
         currentFileUploadedMap = Collections.synchronizedMap(new HashMap<String, Integer>());
         senderAvatar = new HashMap<>();
+        mContext = context;
     }
 
     public void updateFileUploadProgress(File file, int progress) {
@@ -163,12 +163,13 @@ public class ChatMessageAdapter extends BaseListAdapter<QBMessage> implements St
 
     private Drawable getOutGoingMessageBg() {
         int resId = R.drawable.outgoing_message_bg;
-        return ResourceUtils.changeResourceColor(messageBGcolor, resId);
+        return ResourceUtils.changeResourceColor(mContext, R.color.image_loader_color,
+                ContextCompat.getDrawable(mContext, R.drawable.outgoing_message_bg));
     }
 
     private Drawable getIncomingMessageBg() {
         int resId = R.drawable.incoming_message_bg;
-        return ResourceUtils.changeResourceColor(R.color.white, resId);
+        return ResourceUtils.changeResourceColor(mContext, R.color.white, resId);
     }
 
     public void setOnItemInfoExpandedListener(ChatMessageAdapter.OnItemInfoExpandedListener onItemInfoExpandedListener) {
@@ -292,7 +293,7 @@ public class ChatMessageAdapter extends BaseListAdapter<QBMessage> implements St
 
             LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) holder.dateTextView.getLayoutParams();
             if (position == 0) {
-                lp.topMargin = ResourceUtils.getDimen(R.dimen.chat_date_header_top_margin);
+                lp.topMargin = ResourceUtils.getDimen(mContext, R.dimen.chat_date_header_top_margin);
             } else {
                 lp.topMargin = 0;
             }
@@ -441,11 +442,18 @@ public class ChatMessageAdapter extends BaseListAdapter<QBMessage> implements St
                     holder.messageBodyContainerLayout.setBackgroundColor(0);
                     holder.messageInfoTextView.setVisibility(View.GONE);
                 } else {
-                    holder.messageAuthorTextView.setText("" + message.getSenderName());
+                    if (message.getSenderName() != null
+                            && message.getSenderName().length() > 0
+                            && message.getSenderName().equalsIgnoreCase("null")) {
+                        holder.messageAuthorTextView.setText("" + message.getSenderName());
+                    } else {
+                        String userName = String.valueOf((String) message.getMessage().getProperty("username"));
+                        holder.messageAuthorTextView.setText(userName);
+                    }
                     if (message.getSenderImage() != null)
                         holder.userIcon.setImageDrawable(message.getSenderImage());
                     else
-                        holder.userIcon.setImageDrawable(ResourceUtils.getDrawable(R.drawable.ic_user));
+                        holder.userIcon.setImageDrawable(ResourceUtils.getDrawable(mContext, R.drawable.ic_user));
                     holder.messageBodyContainerLayout.setBackground(getIncomingMessageBg());
                 }
             } else {
@@ -485,8 +493,8 @@ public class ChatMessageAdapter extends BaseListAdapter<QBMessage> implements St
 //                    : R.color.background_chat_color;
 
             int textColorResource = R.color.black;
-            holder.messageBodyTextView.setTextColor(ResourceUtils.getColor(textColorResource));
-            holder.messageInfoTextView.setTextColor(ResourceUtils.getColor(textColorResource));
+            holder.messageBodyTextView.setTextColor(ResourceUtils.getColor(mContext, textColorResource));
+            holder.messageInfoTextView.setTextColor(ResourceUtils.getColor(mContext, textColorResource));
 
             //set icon
             if (gravity == (Gravity.RIGHT | Gravity.END)) {
@@ -574,7 +582,7 @@ public class ChatMessageAdapter extends BaseListAdapter<QBMessage> implements St
                     message1.setSent(message.getSent());
                     message1.setRead(message.getRead());
                     message1.setDelivered(message.getDelivered());
-                    message1.setMessage(message.getMessage());
+//                    message1.setMessage(message.getMessage());
                     getList().set(pos, message);
                     notifyDataSetChanged();
                 } catch (Exception e) {

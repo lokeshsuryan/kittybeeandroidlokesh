@@ -2,12 +2,8 @@ package com.kittyapplication.ui.viewmodel;
 
 import android.content.Intent;
 import android.support.v4.widget.DrawerLayout;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
-import com.kittyapplication.R;
-import com.kittyapplication.adapter.DrawerAdapter;
+import com.kittyapplication.listener.KittyManagerListener;
 import com.kittyapplication.ui.activity.AboutUsActivity;
 import com.kittyapplication.ui.activity.BaseActivity;
 import com.kittyapplication.ui.activity.CalendarActivity;
@@ -39,14 +35,14 @@ public class BaseViewModel {
      * @param view
      */
     public void setUpDrawerItem(DrawerLayout view) {
-        ListView lvDrawerItems = (ListView) view.findViewById(R.id.lvDrawer);
-        lvDrawerItems.setAdapter(new DrawerAdapter(mActivity));
-        lvDrawerItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                onDrawerItemClickEvent(position);
-            }
-        });
+//        ListView lvDrawerItems = (ListView) view.findViewById(R.id.lvDrawer);
+//        lvDrawerItems.setAdapter(new DrawerAdapter(mActivity));
+//        lvDrawerItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                onDrawerItemClickEvent(position);
+//            }
+//        });
     }
 
     /**
@@ -54,7 +50,7 @@ public class BaseViewModel {
      *
      * @param pos
      */
-    private void onDrawerItemClickEvent(int pos) {
+    public void onDrawerItemClickEvent(int pos) {
         mActivity.toggle();
         switch (pos) {
             //home
@@ -94,15 +90,25 @@ public class BaseViewModel {
                         .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
                 break;
 
-            //personal getNotes
+            //kitty manager
             case 5:
+                AlertDialogUtils.showKittyManagerDialog(mActivity, new KittyManagerListener() {
+                    @Override
+                    public void getKittyManager(String manager) {
+                        AppLog.d(TAG, manager);
+                    }
+                });
+                break;
+
+            //personal getNotes
+            case 6:
                 mActivity.startActivity(new Intent(mActivity, NotesActivity.class)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                         .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
                 break;
 
             //contact us
-            case 6:
+            case 7:
                 Intent intent = new Intent(mActivity, ContactUsActivity.class);
                 intent.putExtra(AppConstant.USER_PROFILE_ID, "124")
                         .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
@@ -110,7 +116,7 @@ public class BaseViewModel {
                 break;
 
             //about us
-            case 7:
+            case 8:
                 Intent aboutUsIntent = new Intent(mActivity, AboutUsActivity.class);
                 mActivity.startActivity(aboutUsIntent);
                 break;
