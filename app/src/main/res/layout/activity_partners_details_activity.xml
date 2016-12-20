@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/partrner_bg"
+    android:paddingEnd="@dimen/common_15_dp"
+    android:paddingLeft="@dimen/common_15_dp"
+    android:paddingRight="@dimen/common_15_dp"
+    android:paddingStart="@dimen/common_15_dp"
+    android:paddingTop="@dimen/common_15_dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/partner_background">
+
+        <ImageView
+            android:id="@+id/imgBannerPromotionalDetails"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/txtPromotionalDetailContacts"
+            android:layout_marginEnd="@dimen/common_3_dp"
+            android:layout_marginLeft="@dimen/common_3_dp"
+            android:layout_marginRight="@dimen/common_3_dp"
+            android:layout_marginStart="@dimen/common_3_dp"
+            android:layout_marginTop="@dimen/common_3_dp"
+            android:scaleType="fitXY" />
+
+        <ProgressBar
+            android:id="@+id/pbLoaderPromotionalDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_marginEnd="@dimen/common_3_dp"
+            android:layout_marginLeft="@dimen/common_3_dp"
+            android:layout_marginRight="@dimen/common_3_dp"
+            android:layout_marginStart="@dimen/common_3_dp"
+            android:layout_marginTop="@dimen/common_3_dp"
+            android:background="@color/transperent_color">
+
+            <com.kittyapplication.custom.CustomTextViewBold
+                android:id="@+id/txtPromotionalDetailsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/common_5_dp"
+                android:gravity="center"
+                android:text="asndlm"
+                android:textColor="@color/black"
+                android:textSize="@dimen/h4" />
+
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtPromotionalDetailsAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtPromotionalDetailsTitle"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="@dimen/common_5_dp"
+                android:layout_marginTop="@dimen/common_5_dp"
+                android:gravity="center"
+                android:text="lkanmsd,mn"
+                android:textSize="@dimen/h6" />
+        </RelativeLayout>
+
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:id="@+id/txtPromotionalDetailContacts"
+            style="@style/appColorButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="@string/contact"
+            android:textSize="@dimen/h5"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
+</RelativeLayout>

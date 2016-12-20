@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/imgAddGroupUser"
+        android:layout_width="@dimen/common_80_dp"
+        android:layout_height="@dimen/common_80_dp"
+        android:layout_margin="@dimen/common_5_dp"
+        android:clickable="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/add_group_icon_bg" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtLabelAddGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/imgAddGroupUser"
+        android:layout_alignTop="@id/imgAddGroupUser"
+        android:layout_toEndOf="@id/imgAddGroupUser"
+        android:layout_toRightOf="@id/imgAddGroupUser"
+        android:gravity="center_vertical"
+        android:lineSpacingExtra="@dimen/common_5_dp"
+        android:text="@string/provide_group_name"
+        android:textColor="@color/registrationtextcolor" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtLabelGroupIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/imgAddGroupUser"
+        android:layout_marginLeft="@dimen/common_10_dp"
+        android:layout_marginStart="@dimen/common_10_dp"
+        android:gravity="center_vertical"
+        android:text="@string/group_icon"
+        android:textColor="@color/registrationtextcolor" />
+
+
+    <com.kittyapplication.custom.CustomEditTextNormal
+        android:id="@+id/edtAddGroupName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtLabelGroupIcon"
+        android:layout_marginLeft="@dimen/common_10_dp"
+        android:layout_marginStart="@dimen/common_10_dp"
+        android:layout_marginTop="@dimen/common_10_dp"
+        android:background="@null"
+        android:hint="@string/type_group_name"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:maxLength="25"
+        android:padding="@dimen/common_5_dp"
+        android:textSize="@dimen/h5" />
+
+    <View
+        android:id="@+id/viewDividerAddGroup"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/edtAddGroupName"
+        android:layout_marginEnd="@dimen/common_10_dp"
+        android:layout_marginLeft="@dimen/common_10_dp"
+        android:layout_marginRight="@dimen/common_10_dp"
+        android:layout_marginStart="@dimen/common_10_dp"
+        android:layout_marginTop="@dimen/common_5_dp"
+        android:background="@color/colorAccent" />
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvMembers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/viewDividerAddGroup"
+        android:layout_marginEnd="@dimen/common_10_dp"
+        android:layout_marginLeft="@dimen/common_10_dp"
+        android:layout_marginRight="@dimen/common_10_dp"
+        android:layout_marginStart="@dimen/common_10_dp"
+        android:layout_marginTop="@dimen/common_5_dp"
+        android:visibility="gone" />
+
+
+    <com.kittyapplication.custom.CustomEditTextNormal
+        android:id="@+id/edtSearchGroupMember"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rvMembers"
+        android:layout_marginTop="@dimen/common_5_dp"
+        android:background="@drawable/home_search_bg"
+        android:drawableLeft="@drawable/ic_search_dark"
+        android:drawableStart="@drawable/ic_search_dark"
+        android:hint="@string/search"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:padding="@dimen/common_10_dp"
+        android:textSize="@dimen/h5"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/flAddGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/txtAddGroupNext"
+        android:layout_below="@id/edtSearchGroupMember"
+        android:layout_marginEnd="@dimen/common_10_dp"
+        android:layout_marginLeft="@dimen/common_10_dp"
+        android:layout_marginRight="@dimen/common_10_dp"
+        android:layout_marginStart="@dimen/common_10_dp"
+        android:layout_marginTop="@dimen/common_5_dp">
+
+        <ListView
+            android:id="@+id/rvAddGroupMember"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white"
+            android:divider="@color/colorAccent"
+            android:dividerHeight="0.5dp" />
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:id="@+id/txtNoContactFoundAddGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/no_data_found"
+            android:visibility="gone" />
+
+
+    </FrameLayout>
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtAddGroupNext"
+        style="@style/appColorButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="@dimen/common_5_dp"
+        android:text="@string/next" />
+</RelativeLayout>

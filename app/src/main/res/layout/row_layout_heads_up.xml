@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/common_10_dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardElevation="@dimen/common_5_dp"
+        app:cardPreventCornerOverlap="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/common_10_dp">
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtHeadsUpTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/common_10_dp"
+                android:text="kjasnd"
+                android:textColor="@color/black"
+                android:textSize="@dimen/h3" />
+
+            <ImageView
+                android:id="@+id/imgHeadsUp"
+                android:layout_width="@dimen/common_80_dp"
+                android:layout_height="@dimen/common_80_dp"
+                android:layout_below="@id/txtHeadsUpTitle"
+                android:layout_marginEnd="@dimen/common_10_dp"
+                android:layout_marginRight="@dimen/common_10_dp"
+                android:visibility="gone" />
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtHeadsUpDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtHeadsUpTitle"
+                android:layout_marginBottom="@dimen/common_10_dp"
+                android:layout_toEndOf="@id/imgHeadsUp"
+                android:layout_toRightOf="@id/imgHeadsUp"
+                android:lineSpacingExtra="@dimen/common_5_dp"
+                android:text="kjasnd"
+                android:textSize="@dimen/h5"
+                android:visibility="gone" />
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtHeadsUpAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtHeadsUpDescription"
+                android:layout_marginBottom="@dimen/common_10_dp"
+                android:layout_toEndOf="@id/imgHeadsUp"
+                android:layout_toRightOf="@id/imgHeadsUp"
+                android:lineSpacingExtra="@dimen/common_5_dp"
+                android:text="kjasnd"
+                android:textColor="@color/registrationtextcolor"
+                android:textSize="@dimen/h6" />
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtHeadsUpTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtHeadsUpAddress"
+                android:layout_marginBottom="@dimen/common_10_dp"
+                android:layout_toEndOf="@id/imgHeadsUp"
+                android:layout_toRightOf="@id/imgHeadsUp"
+                android:lineSpacingExtra="@dimen/common_5_dp"
+                android:text="kjasnd"
+                android:textColor="@color/registrationtextcolor"
+                android:textSize="@dimen/h6" />
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtHeadsUpDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtHeadsUpTime"
+                android:layout_marginBottom="@dimen/common_10_dp"
+                android:layout_toEndOf="@id/imgHeadsUp"
+                android:layout_toRightOf="@id/imgHeadsUp"
+                android:lineSpacingExtra="@dimen/common_5_dp"
+                android:text="kjasnd"
+                android:textColor="@color/registrationtextcolor"
+                android:textSize="@dimen/h6" />
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+</LinearLayout>

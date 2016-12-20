@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="@dimen/common_5_dp"
+        android:layout_marginLeft="@dimen/common_5_dp"
+        android:layout_marginRight="@dimen/common_5_dp"
+        android:layout_marginStart="@dimen/common_5_dp"
+        android:orientation="vertical">
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:id="@+id/txtSetVenueTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_context_person_venue"
+            android:drawableStart="@drawable/ic_context_person_venue"
+            android:gravity="center_vertical"
+            android:lineSpacingExtra="@dimen/common_5_dp"
+            android:padding="@dimen/common_10_dp"
+            android:textColor="@color/black"
+            android:textSize="@dimen/h6" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/common_10_dp"
+            android:orientation="vertical">
+
+            <com.kittyapplication.custom.CustomEditTextNormal
+                android:id="@+id/edtVenue"
+                style="@style/venueEditTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/venue_edit_text_bg"
+                android:drawableEnd="@drawable/ic_context_location_venue"
+                android:drawablePadding="@dimen/common_10_dp"
+                android:drawableRight="@drawable/ic_context_location_venue"
+                android:hint="@string/venue"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:singleLine="true" />
+
+            <com.kittyapplication.custom.CustomEditTextNormal
+                android:id="@+id/edtVenueAddress"
+                style="@style/venueEditTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/common_80_dp"
+                android:layout_marginTop="@dimen/common_10_dp"
+                android:gravity="top"
+                android:hint="@string/venue_address"
+                android:imeOptions="actionDone"
+                android:inputType="text" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/common_10_dp"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomEditTextNormal
+                    android:id="@+id/edtVenueDate"
+                    style="@style/venueEditTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/common_5_dp"
+                    android:layout_marginRight="@dimen/common_5_dp"
+                    android:layout_weight="1"
+                    android:clickable="false"
+                    android:cursorVisible="false"
+                    android:drawableEnd="@drawable/ic_context_calendar"
+                    android:drawablePadding="@dimen/common_10_dp"
+                    android:drawableRight="@drawable/ic_context_calendar"
+                    android:focusable="false"
+                    android:hint="@string/date"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:singleLine="true" />
+
+                <com.kittyapplication.custom.CustomEditTextNormal
+                    android:id="@+id/edtVenueTime"
+                    style="@style/venueEditTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/common_5_dp"
+                    android:layout_marginStart="@dimen/common_5_dp"
+                    android:layout_weight="1"
+                    android:clickable="false"
+                    android:cursorVisible="false"
+                    android:drawableEnd="@drawable/ic_clock"
+                    android:drawableRight="@drawable/ic_clock"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:hint="@string/time"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:singleLine="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/common_10_dp"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.kittyapplication.custom.CustomEditTextNormal
+                    android:id="@+id/edtVenuePunctualityOne"
+                    style="@style/venueEditTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/common_5_dp"
+                    android:layout_marginRight="@dimen/common_5_dp"
+                    android:layout_weight="1"
+                    android:drawableEnd="@drawable/ic_clock"
+                    android:drawablePadding="@dimen/common_10_dp"
+                    android:drawableRight="@drawable/ic_clock"
+                    android:hint="@string/puntuality_time"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:singleLine="true" />
+
+                <com.kittyapplication.custom.CustomEditTextNormal
+                    android:id="@+id/edtVenuePunctualityTwo"
+                    style="@style/venueEditTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/common_5_dp"
+                    android:layout_marginStart="@dimen/common_5_dp"
+                    android:layout_weight="1"
+                    android:drawableEnd="@drawable/ic_clock"
+                    android:drawablePadding="@dimen/common_10_dp"
+                    android:drawableRight="@drawable/ic_clock"
+                    android:hint="@string/punchtuality_time_2"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:singleLine="true" />
+            </LinearLayout>
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/common_10_dp"
+                android:text="@string/dress_code"
+                android:textSize="@dimen/h6" />
+
+            <com.kittyapplication.custom.CustomEditTextNormal
+                android:id="@+id/edtVenueDressCode"
+                style="@style/venueEditTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/common_80_dp"
+                android:layout_gravity="top"
+                android:layout_marginTop="@dimen/common_10_dp"
+                android:gravity="top"
+                android:hint="@string/enter_detail_for_dresscode"
+                android:imeOptions="actionDone"
+                android:inputType="text" />
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/common_10_dp"
+                android:text="@string/additional_note"
+                android:textSize="@dimen/h6"
+                android:visibility="gone" />
+
+            <com.kittyapplication.custom.CustomEditTextNormal
+                android:id="@+id/edtVenueAdditionalNote"
+                style="@style/venueEditTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/common_80_dp"
+                android:layout_marginTop="@dimen/common_10_dp"
+                android:gravity="top"
+                android:visibility="gone" />
+
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtVenueSubmit"
+                style="@style/greenSubmitButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/common_10_dp"
+                android:layout_marginTop="@dimen/common_20_dp"
+                android:text="@string/submit" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

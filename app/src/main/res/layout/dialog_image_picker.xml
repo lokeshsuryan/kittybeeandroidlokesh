@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llDialogCreateKitty"
+    style="@style/SettingsDialogTheme"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:layout_centerVertical="true"
+    android:layout_margin="@dimen/common_10_dp"
+    android:background="@drawable/create_kitty_bg">
+
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtlabelCreateKitty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/common_10_dp"
+        android:gravity="center"
+        android:padding="@dimen/common_10_dp"
+        android:text="@string/pick_image"
+        android:textColor="@color/user_img_border"
+        android:textSize="@dimen/h3" />
+
+    <View
+        android:id="@+id/viewDividerCreateKitty"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/common_1_dp"
+        android:layout_below="@id/txtlabelCreateKitty"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:layout_marginTop="@dimen/common_5_dp"
+        android:background="@color/white" />
+
+    <LinearLayout
+        android:id="@+id/llPickerButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/viewDividerCreateKitty"
+        android:weightSum="2">
+
+        <RelativeLayout
+            android:id="@+id/rlCamera"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:gravity="center_horizontal">
+
+            <com.kittyapplication.custom.RoundedImageView
+                android:id="@+id/imgOpenCamera"
+                android:layout_width="@dimen/common_80_dp"
+                android:layout_height="@dimen/common_80_dp"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/ic_camera_picker" />
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/imgOpenCamera"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/common_5_dp"
+                android:gravity="center"
+                android:padding="@dimen/common_10_dp"
+                android:text="@string/camera"
+                android:textColor="@color/user_img_border"
+                android:textSize="@dimen/h4" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rlGallery"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:clickable="true">
+
+            <com.kittyapplication.custom.RoundedImageView
+                android:id="@+id/imgOpenGallary"
+                android:layout_width="@dimen/common_80_dp"
+                android:layout_height="@dimen/common_80_dp"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/ic_image_picker" />
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/imgOpenGallary"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/common_5_dp"
+                android:gravity="center"
+                android:padding="@dimen/common_10_dp"
+                android:text="@string/gallery"
+                android:textColor="@color/user_img_border"
+                android:textSize="@dimen/h4" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtImagePickerCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/llPickerButtons"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:layout_marginTop="@dimen/common_10_dp"
+        android:background="@drawable/kitty_cancle_bg"
+        android:clickable="true"
+        android:gravity="center"
+        android:padding="@dimen/common_10_dp"
+        android:text="@string/cancel"
+        android:textColor="@color/user_img_border"
+        android:textSize="@dimen/h4" />
+
+</RelativeLayout>

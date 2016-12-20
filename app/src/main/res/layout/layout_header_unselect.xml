@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llCreateCoupleHeader"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimaryDark"
+    android:orientation="horizontal"
+    android:padding="@dimen/common_10_dp"
+    android:weightSum="2">
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtHeaderOne"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.3"
+        android:gravity="center"
+        android:text="@string/name_member"
+        android:textColor="@color/white" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtHeaderTwo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.7"
+        android:gravity="center"
+        android:textColor="@color/white" />
+
+</LinearLayout>

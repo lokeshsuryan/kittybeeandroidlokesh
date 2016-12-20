@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llBottom"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:background="@color/bottom_menu_bg_color"
+    android:orientation="horizontal"
+    android:weightSum="5">
+
+
+    <LinearLayout
+        android:id="@+id/llBottomRestaurant"
+        android:layout_width="@dimen/common_0_dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imgRestaurant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_restaurant" />
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:text="@string/restaurant_s"
+            android:textSize="@dimen/h7" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llBottomJewellery"
+        android:layout_width="@dimen/common_0_dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imgJewellery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_jewellery" />
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:text="@string/jewellery_s"
+            android:textSize="@dimen/h7" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/llBottomBoutique"
+        android:layout_width="@dimen/common_0_dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imgBoutique"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_boutique" />
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:text="@string/boutique_s"
+            android:textSize="@dimen/h7" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llBottomPartners"
+        android:layout_width="@dimen/common_0_dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imgPartners"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_partners" />
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:text="@string/partners_s"
+            android:textSize="@dimen/h7" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/llBottomParlour"
+        android:layout_width="@dimen/common_0_dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imgParlour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_parlour" />
+
+        <com.kittyapplication.custom.CustomTextViewBold
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingBottom="@dimen/common_5_dp"
+            android:text="@string/heads_up"
+            android:textSize="@dimen/h7" />
+    </LinearLayout>
+
+</LinearLayout>

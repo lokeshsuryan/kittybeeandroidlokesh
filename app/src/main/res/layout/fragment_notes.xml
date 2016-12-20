@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/imgAdvertisement"
+        android:layout_below="@id/llHeader">
+
+        <ListView
+            android:id="@+id/lvNotes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@color/colorAccent"
+            android:dividerHeight="0.5dp"
+            android:paddingBottom="@dimen/common_10_dp" />
+
+        <TextView
+            android:id="@+id/txtEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/common_20_dp"
+            android:gravity="center"
+            android:text="@string/no_data_found"
+            android:textSize="@dimen/h1"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabAddNotes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/imgAdvertisement"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:layout_marginEnd="@dimen/common_10_dp"
+        android:layout_marginRight="@dimen/common_10_dp"
+        android:src="@drawable/ic_fab_plus" />
+
+    <include layout="@layout/layout_bottom_advertise" />
+
+
+    <ProgressBar
+        android:id="@+id/pbLoaderNotesActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
+</RelativeLayout>

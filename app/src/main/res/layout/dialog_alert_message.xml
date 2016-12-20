@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llDialogCreateKitty"
+    style="@style/SettingsDialogTheme"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_margin="@dimen/common_10_dp"
+        android:background="@drawable/create_kitty_bg">
+
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:id="@+id/txtAlertMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/common_10_dp"
+            android:gravity="center"
+            android:lineSpacingExtra="@dimen/common_5_dp"
+            android:padding="@dimen/common_10_dp"
+            android:text="@string/alert_message_couple"
+            android:textColor="@color/user_img_border"
+            android:textSize="@dimen/h3" />
+
+        <View
+            android:id="@+id/viewDividerCreateKitty"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/common_1_dp"
+            android:layout_below="@id/txtAlertMessage"
+            android:layout_marginTop="@dimen/common_5_dp"
+            android:background="@color/white" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/viewDividerCreateKitty"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/common_10_dp"
+            android:layout_marginTop="@dimen/common_10_dp">
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/alertMessageYes"
+                android:layout_width="@dimen/common_60_dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/kitty_cancle_bg"
+                android:clickable="true"
+                android:gravity="center"
+                android:padding="@dimen/common_10_dp"
+                android:text="@string/yes"
+                android:textColor="@color/user_img_border"
+                android:textSize="@dimen/h4" />
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/alertMessageNo"
+                android:layout_width="@dimen/common_60_dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/common_20_dp"
+                android:layout_marginStart="@dimen/common_20_dp"
+                android:layout_toEndOf="@id/alertMessageYes"
+                android:layout_toRightOf="@id/alertMessageYes"
+                android:background="@drawable/kitty_cancle_bg"
+                android:clickable="true"
+                android:gravity="center"
+                android:padding="@dimen/common_10_dp"
+                android:text="@string/no"
+                android:textColor="@color/user_img_border"
+                android:textSize="@dimen/h4" />
+
+        </RelativeLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

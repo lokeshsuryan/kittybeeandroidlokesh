@@ -1,0 +1,76 @@
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <include layout="@layout/container_layout" />
+
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nvView"
+        android:layout_width="304dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/drawer_bg"
+        android:nestedScrollingEnabled="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!--   <LinearLayout
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_above="@+id/txtcurrentAppVersion"
+                   android:layout_alignParentTop="true"
+                   android:orientation="vertical">-->
+
+            <!--<include layout="@layout/drawer_hedder" />-->
+
+            <!--<ListView
+                android:id="@+id/lvDrawer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:dividerHeight="0.5dp" />-->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:weightSum="10">
+
+                <android.support.design.widget.NavigationView
+                    android:id="@+id/nav_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_gravity="top"
+                    android:layout_weight="10"
+                    android:background="@color/drawer_bg"
+                    android:fitsSystemWindows="false"
+                    app:headerLayout="@layout/drawer_hedder"
+                    app:itemBackground="@android:color/transparent"
+                    app:itemIconTint="@color/white"
+                    app:itemTextColor="@color/white"
+                    app:menu="@menu/drawer_menu" />
+            </LinearLayout>
+
+            <!--</LinearLayout>-->
+
+            <com.kittyapplication.custom.CustomTextViewNormal
+                android:id="@+id/txtcurrentAppVersion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="bottom"
+                android:layout_margin="@dimen/common_10_dp"
+                android:gravity="end"
+                android:text="@string/version_v"
+                android:textColor="@color/white" />
+        </RelativeLayout>
+
+    </android.support.design.widget.NavigationView>
+
+
+</android.support.v4.widget.DrawerLayout>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/llHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/common_10_dp"
+        android:orientation="horizontal">
+
+        <com.kittyapplication.custom.RoundedImageView
+            android:id="@+id/imgGroupIcon"
+            android:layout_width="@dimen/common_60_dp"
+            android:layout_height="@dimen/common_60_dp"
+            android:src="@mipmap/ic_launcher" />
+
+        <com.kittyapplication.custom.CustomTextViewNormal
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="@dimen/common_10_dp"
+            android:text="@string/please_provide_group_name_n_icon" />
+
+    </LinearLayout>
+
+    <com.kittyapplication.custom.CustomEditTextNormal
+        android:id="@+id/edtGroupName"
+        style="@style/styleCommonEdittext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/llHeader"
+        android:layout_marginBottom="@dimen/common_10_dp"
+        android:layout_marginEnd="@dimen/common_10_dp"
+        android:layout_marginLeft="@dimen/common_10_dp"
+        android:layout_marginRight="@dimen/common_10_dp"
+        android:layout_marginStart="@dimen/common_10_dp"
+        android:drawableEnd="@drawable/ic_temp_start"
+        android:drawableRight="@drawable/ic_temp_start"
+        android:hint="@string/type_group_name_here" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvCreateGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnCGNext"
+        android:layout_below="@id/edtGroupName"
+        android:layout_marginEnd="@dimen/common_10_dp"
+        android:layout_marginLeft="@dimen/common_10_dp"
+        android:layout_marginRight="@dimen/common_10_dp"
+        android:layout_marginStart="@dimen/common_10_dp" />
+
+    <Button
+        android:id="@+id/btnCGNext"
+        style="@style/appColorButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="@string/lbl_next" />
+</RelativeLayout>

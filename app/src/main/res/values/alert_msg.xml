@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_internet_available">No Internet Available!</string>
+    <string name="no_data_found">Offline data is not available, please sync your data!</string>
+
+
+</resources>

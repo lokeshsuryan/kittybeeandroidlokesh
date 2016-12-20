@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+    android:layout_marginRight="@dimen/activity_horizontal_margin"
+    android:layout_marginStart="@dimen/activity_horizontal_margin"
+    android:layout_marginTop="@dimen/activity_horizontal_margin"
+    android:background="@drawable/my_notes_bg"
+    android:orientation="vertical"
+    android:padding="@dimen/common_10_dp">
+
+    <com.kittyapplication.custom.CustomTextViewBold
+        android:id="@+id/txtMyNotesTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="title"
+        android:textColor="@color/black"
+        android:textSize="@dimen/h5" />
+
+    <com.kittyapplication.custom.CustomTextViewNormal
+        android:id="@+id/txtMyNotesDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/common_10_dp"
+        android:text="title" />
+
+
+</LinearLayout>
