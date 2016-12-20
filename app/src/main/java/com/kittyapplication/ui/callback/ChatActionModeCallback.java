@@ -3,7 +3,6 @@ package com.kittyapplication.ui.callback;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
 import android.support.v7.view.ActionMode;
@@ -13,10 +12,10 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
 import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.chat.utils.qb.QbDialogHolder;
-import com.kittyapplication.core.ui.adapter.BaseSelectableListAdapter;
 import com.kittyapplication.core.ui.adapter.BaseSelectedRecyclerViewAdapter;
 import com.kittyapplication.core.utils.ConnectivityUtils;
 import com.kittyapplication.core.utils.ResourceUtils;
@@ -31,7 +30,6 @@ import com.kittyapplication.utils.AlertDialogUtils;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.Utils;
-import com.quickblox.chat.model.QBDialog;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 
@@ -267,7 +265,7 @@ public class ChatActionModeCallback implements ActionMode.Callback {
 
     private void showToast(@StringRes int id) {
         finishAction();
-        AlertDialogUtils.showSnackToast(ResourceUtils.getString(id), context);
+        AlertDialogUtils.showSnackToast(ResourceUtils.getString(AppApplication.getInstance(), id), context);
     }
 
     private void showToast(String msg) {

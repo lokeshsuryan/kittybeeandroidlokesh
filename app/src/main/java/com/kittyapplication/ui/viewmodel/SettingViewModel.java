@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.google.gson.Gson;
+import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
 import com.kittyapplication.chat.utils.chat.QbUpdateDialogListener;
 import com.kittyapplication.chat.utils.qb.QbDialogUtils;
@@ -38,6 +39,7 @@ import com.kittyapplication.utils.AlertDialogUtils;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.Utils;
+import com.quickblox.chat.model.QBChatDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +59,7 @@ public class SettingViewModel implements ChangeGroupNameListener, GetImageFromLi
     private ChatData mChatData;
     private ParticipantDao mParticipantDao;
     private Call<ServerResponse<ParticipantDao>> mSettingApiCall;
+    private QBChatDialog mQbDialog;
 
 
     //Type == 0 FOR REFRESH GROUP
@@ -289,10 +292,14 @@ public class SettingViewModel implements ChangeGroupNameListener, GetImageFromLi
                                 mActivity.setName(mGroupName);
                                 mActivity.showSnackBar(mActivity.getResources()
                                         .getString(R.string.change_name_sucess));
+                                updateGroupNameToDB(mGroupName);
                             } else if (mType == 2) {
                                 mPbLoader.setVisibility(View.GONE);
                                 mActivity.showSnackBar(mActivity.getResources()
                                         .getString(R.string.change_img_sucess));
+                                if (Utils.isValidString(response.body().getUrl())) {
+                                    updateGroupImageToDB(response.body().getUrl());
+                                }
                                 mActivity.setImage(mBitMap);
                             }
                         } else {
@@ -330,10 +337,11 @@ public class SettingViewModel implements ChangeGroupNameListener, GetImageFromLi
         final String groupName = name;
         if (Utils.checkInternetConnection(mActivity)) {
 
-            QbDialogUtils.updateQbDialogById(mActivity.getmDialogId(), 0, null,
+            QbDialogUtils.updateQbDialogById(mChatData.getQuickId(), 0, null,
                     mGroupName, new QbUpdateDialogListener() {
                         @Override
-                        public void onSuccessResponce() {
+                        public void onSuccessResponse(QBChatDialog dialog) {
+                            mQbDialog = dialog;
                             mType = 1;
                             ReqChangeGroupName changeGroupNameObj = new ReqChangeGroupName();
                             changeGroupNameObj.setName(groupName);
@@ -526,6 +534,8 @@ public class SettingViewModel implements ChangeGroupNameListener, GetImageFromLi
         protected void onPostExecute(ParticipantDao aVoid) {
             super.onPostExecute(aVoid);
 //            MySQLiteHelper.getInstance(mActivity).close();
+            AppLog.d(TAG, new Gson().toJson(aVoid).toString());
+
             if (aVoid != null && Utils.isValidString(aVoid.getId())) {
                 mParticipantDao = aVoid;
                 mActivity.setDataIntoList(aVoid);
@@ -555,5 +565,21 @@ public class SettingViewModel implements ChangeGroupNameListener, GetImageFromLi
     public void destroyApiCall() {
         if (mSettingApiCall != null && mSettingApiCall.isExecuted())
             mSettingApiCall.cancel();
+    }
+
+    private void updateGroupImageToDB(String img) {
+        KittyViewModel group = new KittyViewModel(mActivity);
+        mChatData.setGroupImage(img);
+        group.updateGroup(mChatData);
+        AppApplication.getInstance().setChatData(mChatData);
+    }
+
+    private void updateGroupNameToDB(String name) {
+        KittyViewModel group = new KittyViewModel(mActivity);
+        mChatData.setName(name);
+        group.updateGroup(mChatData);
+        if (mQbDialog != null)
+            group.updateDialog(mQbDialog);
+        AppApplication.getInstance().setChatData(mChatData);
     }
 }

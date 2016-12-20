@@ -23,6 +23,7 @@ import com.kittyapplication.chat.utils.qb.QbAuthUtils;
 import com.kittyapplication.chat.utils.qb.QbSessionStateCallback;
 import com.kittyapplication.core.utils.ErrorUtils;
 import com.kittyapplication.core.utils.SharedPrefsHelper;
+import com.kittyapplication.rest.Singleton;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 import com.quickblox.users.model.QBUser;
@@ -44,18 +45,18 @@ public abstract class ChatBaseActivity extends BaseActivity implements QbSession
         super.onCreate(savedInstanceState);
         actionBar = getSupportActionBar();
 
-        /*boolean wasAppRestored = savedInstanceState != null;
-        final boolean isQbSessionActive = QbAuthUtils.isSessionActive();
+        boolean wasAppRestored = savedInstanceState != null;
+        boolean isQbSessionActive = QbAuthUtils.isSessionActive();
         final boolean needToRestoreSession = wasAppRestored || !isQbSessionActive;
         Log.v(TAG, "wasAppRestored = " + wasAppRestored);
-        Log.v(TAG, "isQbSessionActive = " + isQbSessionActive);*/
+        Log.v(TAG, "isQbSessionActive = " + isQbSessionActive);
 
         // Triggering callback via Handler#post() method
         // to let child's code in onCreate() to execute first
         mainThreadHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (!QbAuthUtils.isSessionActive()) {
+                if (needToRestoreSession) {
                     recreateChatSession();
                     isAppSessionActive = false;
                 } else {
@@ -63,14 +64,6 @@ public abstract class ChatBaseActivity extends BaseActivity implements QbSession
                     subscribeForPushNotification();
                     isAppSessionActive = true;
                 }
-
-                /*if (needToRestoreSession) {
-
-                } else {
-                    onSessionCreated(true);
-                    subscribeForPushNotification();
-                    isAppSessionActive = true;
-                }*/
             }
         });
     }
@@ -99,7 +92,6 @@ public abstract class ChatBaseActivity extends BaseActivity implements QbSession
     }
 
     private void reloginToChat(final QBUser user) {
-//        ProgressDialogFragment.show(getSupportFragmentManager(), R.string.dlg_restoring_chat_session);
         ChatHelper.getInstance().login(user, new QBEntityCallback<Void>() {
             @Override
             public void onSuccess(Void result, Bundle bundle) {
@@ -107,7 +99,6 @@ public abstract class ChatBaseActivity extends BaseActivity implements QbSession
                 isAppSessionActive = true;
                 onSessionCreated(true);
                 subscribeForPushNotification();
-//                ProgressDialogFragment.hide(getSupportFragmentManager());
             }
 
             @Override
@@ -118,23 +109,8 @@ public abstract class ChatBaseActivity extends BaseActivity implements QbSession
                     reloginToChat(user);
                     onSessionCreated(false);
                 } else {
-//                    showErrorSnackbar(R.string.error_recreate_session, e,
-//                            new View.OnClickListener() {
-//                                @Override
-//                                public void onClick(View v) {
                     retry = 0;
-//                                    reloginToChat(user);
-//                                }
-//                            });
                 }
-//                ProgressDialogFragment.hide(getSupportFragmentManager());
-//                Log.w(TAG, "Chat login onError(): " + new Gson().toJson(e));
-//                if (e.getHttpStatusCode() == -1) {
-//                    onSessionCreated(true);
-//                } else {
-//
-//                    onSessionCreated(false);
-//                }
             }
         });
     }
@@ -151,7 +127,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements QbSession
         }
     }
 
-    private boolean checkCallPermission() {
+    /*private boolean checkCallPermission() {
         try {
             if (Build.VERSION.SDK_INT >= 23) {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
@@ -171,19 +147,26 @@ public abstract class ChatBaseActivity extends BaseActivity implements QbSession
             e.printStackTrace();
             return false;
         }
-    }
+    }*/
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         try {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                subscribeForPushNotification();
+            Log.d(TAG, "onRequestPermissionsResult: ");
+            if (grantResults != null && grantResults.length > 0)
+                for (int i = 0; i < grantResults.length; i++) {
+                    if (i == grantResults.length) {
+                        subscribeForPushNotification();
+                        Singleton.getInstance().getLocationUtils().initGoogleApi();
+                    }
+                }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    /*private boolean checkCallPermission() {
+
+    private boolean checkCallPermission() {
         try {
             if (Build.VERSION.SDK_INT >= 23) {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
@@ -211,5 +194,5 @@ public abstract class ChatBaseActivity extends BaseActivity implements QbSession
             e.printStackTrace();
             return false;
         }
-    }*/
+    }
 }

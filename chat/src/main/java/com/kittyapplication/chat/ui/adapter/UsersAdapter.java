@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.kittyapplication.chat.R;
 import com.kittyapplication.chat.utils.SharedPreferencesUtil;
 import com.kittyapplication.chat.utils.UiUtils;
+import com.kittyapplication.core.CoreApp;
 import com.kittyapplication.core.ui.adapter.BaseListAdapter;
 import com.kittyapplication.core.utils.ResourceUtils;
 import com.quickblox.users.model.QBUser;
@@ -45,9 +46,9 @@ public class UsersAdapter extends BaseListAdapter<QBUser> {
         }
 
         if (isAvailableForSelection(user)) {
-            holder.loginTextView.setTextColor(ResourceUtils.getColor(R.color.text_color_black));
+            holder.loginTextView.setTextColor(ResourceUtils.getColor(CoreApp.getInstance(),R.color.text_color_black));
         } else {
-            holder.loginTextView.setTextColor(ResourceUtils.getColor(R.color.text_color_medium_grey));
+            holder.loginTextView.setTextColor(ResourceUtils.getColor(CoreApp.getInstance(),R.color.text_color_medium_grey));
         }
 
         holder.userImageView.setBackgroundDrawable(UiUtils.getColorCircleDrawable(position));

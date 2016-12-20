@@ -10,6 +10,8 @@ public class OfflineSummeryMembers {
 
     private String kittynext;
 
+    private String count;
+
     private List<SummaryListDao> data;
 
     public String getKittynext() {
@@ -26,5 +28,13 @@ public class OfflineSummeryMembers {
 
     public void setData(List<SummaryListDao> data) {
         this.data = data;
+    }
+
+    public String getCount() {
+        return count;
+    }
+
+    public void setCount(String count) {
+        this.count = count;
     }
 }

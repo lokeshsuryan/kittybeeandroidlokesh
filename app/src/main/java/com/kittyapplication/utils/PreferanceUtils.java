@@ -11,7 +11,7 @@ import com.kittyapplication.model.ArticleDao;
 import com.kittyapplication.model.BannerData;
 import com.kittyapplication.model.ChatDao;
 import com.kittyapplication.model.RegisterResponseDao;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -368,15 +368,15 @@ public class PreferanceUtils {
                 AppConstant.NOTIFICATION_FLAG);
     }
 
-    public static void setQbDialogInPreferance(Context context, ArrayList<QBDialog> list) {
+    public static void setQbDialogInPreferance(Context context, ArrayList<QBChatDialog> list) {
         PreferanceUtils.putStringInPreferences(context, new Gson().toJson(list).toString(), AppConstant.QB_DIALOG_DATA);
     }
 
-    public static ArrayList<QBDialog> getDialogFromPreferance(Context context) {
-        ArrayList<QBDialog> list;
+    public static ArrayList<QBChatDialog> getDialogFromPreferance(Context context) {
+        ArrayList<QBChatDialog> list;
         String json = PreferanceUtils.getStringFromPreferences(context, "", AppConstant.QB_DIALOG_DATA);
         Gson gson = new Gson();
-        Type listType = new TypeToken<ArrayList<QBDialog>>() {
+        Type listType = new TypeToken<ArrayList<QBChatDialog>>() {
         }.getType();
         if (Utils.isValidString(json)) {
             list = gson.fromJson(json, listType);
@@ -439,4 +439,27 @@ public class PreferanceUtils {
         }
         return list;
     }*/
+
+
+    /**
+     * get is Already Login
+     *
+     * @param context
+     * @return
+     */
+    public static boolean hasDeviceID(Context context) {
+        return PreferanceUtils.getBooleanFromPreferences(context, false,
+                AppConstant.PREF_DEVICE_ID);
+    }
+
+    /**
+     * Set is Already Login
+     *
+     * @param context
+     * @param isRegistered
+     */
+    public static void setDeviceID(Context context, boolean isRegistered) {
+        PreferanceUtils.putBooleanInPreferences(context, isRegistered,
+                AppConstant.PREF_DEVICE_ID);
+    }
 }

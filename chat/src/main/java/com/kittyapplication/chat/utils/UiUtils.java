@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.kittyapplication.chat.App;
 import com.kittyapplication.chat.R;
+import com.kittyapplication.core.CoreApp;
 import com.kittyapplication.core.utils.ResourceUtils;
 
 import java.util.Random;
@@ -30,7 +31,7 @@ public class UiUtils {
     }
 
     public static Drawable getGreyCircleDrawable() {
-        return getColoredCircleDrawable(ResourceUtils.getColor(R.color.color_grey));
+        return getColoredCircleDrawable(ResourceUtils.getColor(CoreApp.getInstance(), R.color.color_grey));
     }
 
     public static Drawable getRandomColorCircleDrawable() {
@@ -42,7 +43,7 @@ public class UiUtils {
     }
 
     private static Drawable getColoredCircleDrawable(@ColorInt int color) {
-        GradientDrawable drawable = (GradientDrawable) ResourceUtils.getDrawable(R.drawable.shape_circle);
+        GradientDrawable drawable = (GradientDrawable) ResourceUtils.getDrawable(CoreApp.getInstance(), R.drawable.shape_circle);
         drawable.setColor(color);
         return drawable;
     }
@@ -63,12 +64,12 @@ public class UiUtils {
     }
 
     public static int getCircleColor(@IntRange(from = RANDOM_COLOR_START_RANGE, to = RANDOM_COLOR_END_RANGE)
-                                     int colorPosition) {
+                                             int colorPosition) {
         String colorIdName = String.format("random_color_%d", colorPosition + 1);
         int colorId = App.getInstance().getResources()
                 .getIdentifier(colorIdName, "color", App.getInstance().getPackageName());
 
-        return ResourceUtils.getColor(colorId);
+        return ResourceUtils.getColor(CoreApp.getInstance(), colorId);
     }
 
     // Custom method to apply emboss mask filter to TextView

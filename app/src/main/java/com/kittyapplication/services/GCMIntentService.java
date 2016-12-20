@@ -34,13 +34,14 @@ public class GCMIntentService extends CoreGcmPushListenerService {
                 if (data.containsKey(QB_DIALOG_ID)) {
                     if (ActivityLifecycle.getInstance().isBackground()) {
                         NotificationUtils.showNotification(this, HomeActivity.class,
-                                ResourceUtils.getString(R.string.app_name), message,
+                                ResourceUtils.getString(AppApplication.getInstance(),
+                                        R.string.app_name), message,
                                 R.drawable.ic_noti_small, (int) System.currentTimeMillis());
                     }
                 } else {
                     PreferanceUtils.setHasNotification(this, true);
                     NotificationUtils.showNotification(this, NotificationActivity.class,
-                            ResourceUtils.getString(R.string.app_name), message,
+                            ResourceUtils.getString(AppApplication.getInstance(),R.string.app_name), message,
                             R.drawable.ic_noti_small, (int) System.currentTimeMillis());
 
                     // Start intent service to get group data

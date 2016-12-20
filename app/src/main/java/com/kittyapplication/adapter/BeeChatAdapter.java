@@ -19,7 +19,7 @@ import com.kittyapplication.listener.ChatOptionClickListener;
 import com.kittyapplication.utils.AlertDialogUtils;
 import com.kittyapplication.utils.ImageUtils;
 import com.kittyapplication.utils.Utils;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBDialogType;
 
 import java.util.ArrayList;
@@ -33,14 +33,14 @@ import java.util.List;
 public class BeeChatAdapter extends BaseAdapter implements Filterable, ChatOptionClickListener {
     private static final String TAG = KittiesAdapter.class.getSimpleName();
 
-    private List<QBDialog> mList;
-    private List<QBDialog> mListClone;
+    private List<QBChatDialog> mList;
+    private List<QBChatDialog> mListClone;
     private Context mContext;
     private static LayoutInflater inflater = null;
     private ItemFilter filter;
     private int mPosition;
 
-    public BeeChatAdapter(Context context, List<QBDialog> lists) {
+    public BeeChatAdapter(Context context, List<QBChatDialog> lists) {
         mList = lists;
         mListClone = lists;
         mContext = context;
@@ -55,7 +55,7 @@ public class BeeChatAdapter extends BaseAdapter implements Filterable, ChatOptio
     }
 
     @Override
-    public QBDialog getItem(int position) {
+    public QBChatDialog getItem(int position) {
         return mList.get(position);
     }
 
@@ -144,7 +144,7 @@ public class BeeChatAdapter extends BaseAdapter implements Filterable, ChatOptio
         //        type ==1 for display private chat option
         //        type ==2 for display only clear chat option
         try {
-            QBDialog groupChat = getItem(pos);
+            QBChatDialog groupChat = getItem(pos);
             int type = 0;
 
             QBDialogType chatType = groupChat.getType();
@@ -171,9 +171,9 @@ public class BeeChatAdapter extends BaseAdapter implements Filterable, ChatOptio
         protected FilterResults performFiltering(CharSequence constraint) {
             String filterString = constraint.toString().toLowerCase();
             FilterResults results = new FilterResults();
-            List<QBDialog> list = mListClone;
+            List<QBChatDialog> list = mListClone;
             int count = list.size();
-            final ArrayList<QBDialog> newList = new ArrayList<>(count);
+            final ArrayList<QBChatDialog> newList = new ArrayList<>(count);
 
             String filterableString;
 
@@ -193,7 +193,7 @@ public class BeeChatAdapter extends BaseAdapter implements Filterable, ChatOptio
         @SuppressWarnings("unchecked")
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            mList = (List<QBDialog>) results.values;
+            mList = (List<QBChatDialog>) results.values;
             notifyDataSetChanged();
         }
     }
@@ -203,7 +203,7 @@ public class BeeChatAdapter extends BaseAdapter implements Filterable, ChatOptio
         notifyDataSetChanged();
     }
 
-    public void updateList(List<QBDialog> updatedList) {
+    public void updateList(List<QBChatDialog> updatedList) {
         mList = updatedList;
         notifyDataSetChanged();
     }
@@ -217,7 +217,7 @@ public class BeeChatAdapter extends BaseAdapter implements Filterable, ChatOptio
 
     private void deleteGroup(int pos) {
         try {
-            final QBDialog data = getItem(pos);
+            final QBChatDialog data = getItem(pos);
             final int position = pos;
             // option delete Group Chat
             /*if (data.getGroup() != null &&

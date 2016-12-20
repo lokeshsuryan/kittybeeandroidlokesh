@@ -5,19 +5,19 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
+        versionCode rootProject.versionCode
+        versionName rootProject.versionName
     }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':core')
-    compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
-    compile("com.quickblox:quickblox-android-sdk-chat:$rootProject.qbSdkVersion")
-    compile("com.quickblox:quickblox-android-sdk-content:$rootProject.qbSdkVersion")
-    compile ("com.quickblox:quickblox-android-sdk-messages:$rootProject.qbSdkVersion")
+    compile "com.nostra13.universalimageloader:universal-image-loader:${rootProject.universalImageLoaderVersion}"
+    compile "com.quickblox:quickblox-android-sdk-chat:${rootProject.qbSdkVersion}"
+    compile "com.quickblox:quickblox-android-sdk-content:${rootProject.qbSdkVersion}"
+    compile "com.quickblox:quickblox-android-sdk-messages:${rootProject.qbSdkVersion}"
     compile "se.emilsjolander:stickylistheaders:${rootProject.stickyListHeaders}"
 }

@@ -8,7 +8,6 @@ import android.util.Log;
 import com.kittyapplication.core.utils.ConnectivityUtils;
 import com.kittyapplication.core.utils.StringUtils;
 import com.kittyapplication.sync.ChatSyncOperation;
-import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 
 /**
@@ -25,12 +24,13 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
         try {
             if (ConnectivityUtils.checkInternetConnection(context)) {
                 ChatSyncOperation chatSyncOperation = new ChatSyncOperation(context);
-                chatSyncOperation.syncDeletedDialog();
-                chatSyncOperation.syncCreatedDialog();
-                chatSyncOperation.syncMessages();
-
                 // send broadcast to update network setting on screen
                 chatSyncOperation.sendBroadCast(context);
+
+                chatSyncOperation.syncDeletedDialog();
+                chatSyncOperation.syncCreatedDialog();
+                chatSyncOperation.sendPendingMessage();
+                chatSyncOperation.syncMessages();
             }
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);

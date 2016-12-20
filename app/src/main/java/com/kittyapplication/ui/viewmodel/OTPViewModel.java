@@ -46,6 +46,12 @@ public class OTPViewModel extends QBUserViewModel {
             ServerRequest obj = new ServerRequest();
             obj.setMobile(mobileNumber);
             obj.setOtp(editText.getText().toString().trim());
+
+            if (Utils.isValidString(AppApplication.getGCMId())) {
+                PreferanceUtils.setDeviceID(mActivity, true);
+            } else {
+                PreferanceUtils.setDeviceID(mActivity, false);
+            }
             obj.setDeviceID(AppApplication.getGCMId());
 
             Call<OTPResponseDao> call = Singleton.getInstance().getRestOkClient().otp(obj);

@@ -27,6 +27,7 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.kittyapplication.AppApplication;
 
 public class LocationUtils implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener,
@@ -39,27 +40,29 @@ public class LocationUtils implements GoogleApiClient.ConnectionCallbacks,
     private LocationRequest mLocationRequest;
     private double mLatitude;
     private double mLongitude;
-
+    private LocationUpdateListener mListener;
     private final int REQUEST_LOCATION_PERMISSION = 101;
 
-    public LocationUtils(Context ctx) {
+    public LocationUtils() {
         mLatitude = 0.0;
         mLongitude = 0.0;
-        mContext = ctx;
-        initGoogleApi();
     }
 
     /**
      * Initialise google api
      */
     public void initGoogleApi() {
-        mGoogleApiClient = new GoogleApiClient.Builder(mContext)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this).build();
+        try {
+            mGoogleApiClient = new GoogleApiClient.Builder(mContext)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this).build();
 
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
+            if (mGoogleApiClient != null) {
+                mGoogleApiClient.connect();
+            }
+        } catch (Exception e) {
+            AppLog.e(TAG, e.getMessage(), e);
         }
     }
 
@@ -113,17 +116,19 @@ public class LocationUtils implements GoogleApiClient.ConnectionCallbacks,
         int priority = AppConstant.LOCATION_PRIORITY;
 
         mLocationRequest = LocationRequest.create();
-        mLocationRequest.setInterval(locationInterval);
-        mLocationRequest.setNumUpdates(1);
+//        mLocationRequest.setInterval(locationInterval);
+//        mLocationRequest.setNumUpdates(1);
         mLocationRequest.setPriority(priority);
         mLocationRequest.setSmallestDisplacement(distance);
+//        mLocationRequest.setExpirationDuration(AppConstant.EXPIRE_TIME_LOCATION);
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(mLocationRequest);
         builder.setAlwaysShow(true);
 
         PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient,
+                        builder.build());
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
             @Override
             public void onResult(LocationSettingsResult result) {
@@ -164,8 +169,8 @@ public class LocationUtils implements GoogleApiClient.ConnectionCallbacks,
     public void startLocationUpdates(final long locationInterval) {
         try {
             if (checkPermission()) {
-                LocationServices.FusedLocationApi.
-                        requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+//                LocationServices.FusedLocationApi.
+//                        requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
                 Location lastKnownLocation = LocationServices.FusedLocationApi
                         .getLastLocation(mGoogleApiClient);
@@ -178,9 +183,20 @@ public class LocationUtils implements GoogleApiClient.ConnectionCallbacks,
                     AppLog.d(TAG, "Last Known Lat = " + lastKnownLocation.getLatitude());
                     AppLog.d(TAG, "Last Known Lng = " + lastKnownLocation.getLongitude());
 
+                    Location location = new Location("current location");
+                    location.setLongitude(lastKnownLocation.getLongitude());
+                    location.setLatitude(lastKnownLocation.getLatitude());
+                    AppApplication.getInstance().setLocation(location);
+
+                    if (mListener != null) {
+                        mListener.onLocationUpdate();
+                        turnOFFLocation();
+                    }
+
                 } else {
                     AppLog.d(TAG, "Last known location is not available...");
                 }
+                turnOFFLocation();
             }
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -231,8 +247,6 @@ public class LocationUtils implements GoogleApiClient.ConnectionCallbacks,
                             && grantResults[0] == PackageManager.PERMISSION_GRANTED
                             && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                         AppLog.d(getClass().getSimpleName(), "PERMISSION GRANTED BY USER... GO AHEAD..");
-                        long locationInterval = AppConstant.LOCATION_INTERVAL;
-                        startLocationUpdates(locationInterval);
                     } else {
                         AppLog.d(getClass().getSimpleName(), "PERMISSION NOT GRANTED... BACK TO APP..");
                     }
@@ -260,17 +274,6 @@ public class LocationUtils implements GoogleApiClient.ConnectionCallbacks,
                             Manifest.permission.ACCESS_COARSE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }
-            /*if (ActivityCompat.shouldShowRequestPermissionRationale((Activity) mContext,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-                AlertDialogUtils.showToast(mContext.getString(R.string.location_permission), mContext);
-            } else {
-                AlertDialogUtils.showToast(mContext.getString(R.string.location_permission), mContext);
-                ActivityCompat.requestPermissions((Activity) mContext,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION},
-                        REQUEST_LOCATION_PERMISSION);
-
-            }*/
     }
 
     /**
@@ -300,7 +303,7 @@ public class LocationUtils implements GoogleApiClient.ConnectionCallbacks,
      * @param context
      * @return true/false
      */
-    public static boolean isLocationEnabled(Context context) {
+    public boolean isLocationEnabled(Context context) {
         int locationMode = 0;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -326,16 +329,20 @@ public class LocationUtils implements GoogleApiClient.ConnectionCallbacks,
         this.mContext = mActivity;
     }
 
-
     public GoogleApiClient getGoogleApiClient() {
         return mGoogleApiClient;
     }
 
-    public void setLatitude(double latitude) {
-        this.mLatitude = latitude;
+    public void setListener(LocationUpdateListener Listener) {
+        this.mListener = Listener;
     }
 
-    public void setLongitude(double longitude) {
-        this.mLongitude = longitude;
+    private void turnOFFLocation() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    }
+
+
+    public interface LocationUpdateListener {
+        void onLocationUpdate();
     }
 }

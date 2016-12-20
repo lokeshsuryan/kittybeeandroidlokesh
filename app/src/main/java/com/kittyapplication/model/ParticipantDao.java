@@ -16,7 +16,7 @@ public class ParticipantDao {
     @SerializedName("quick_id")
     private String quickId;
     private String groupIMG;
-//    private int count;
+    private int count;
     private List<ParticipantMember> participant = new ArrayList<>();
 
     public String getId() {
@@ -59,11 +59,11 @@ public class ParticipantDao {
         this.participant = participant;
     }
 
-    /*public int getCount() {
+    public int getCount() {
         return count;
     }
 
     public void setCount(int count) {
         this.count = count;
-    }*/
+    }
 }

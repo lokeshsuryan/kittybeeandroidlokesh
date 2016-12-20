@@ -25,6 +25,7 @@ import com.kittyapplication.R;
 import com.kittyapplication.adapter.AddGroupContactAdapter;
 import com.kittyapplication.adapter.AddMemberInGroupAdapter;
 import com.kittyapplication.chat.utils.ImageLoaderUtils;
+import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.chat.utils.qb.QbDialogUtils;
 import com.kittyapplication.chat.utils.qb.callback.QBGetGroupID;
 import com.kittyapplication.custom.AddKittyRulesListener;
@@ -55,7 +56,7 @@ import com.kittyapplication.utils.Utils;
 import com.quickblox.chat.QBGroupChat;
 import com.quickblox.chat.QBGroupChatManager;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 
@@ -191,8 +192,8 @@ public class AddGroupViewModel implements AddKittyRulesListener,
                 , ""
                 , new QBGetGroupID() {
                     @Override
-                    public void getQuickBloxGroupID(QBDialog dialog, String message, QBGroupChatManager groupChatManager) {
-                        sendMessage(dialog.getRoomJid(), message, groupChatManager);
+                    public void getQuickBloxGroupID(QBChatDialog dialog, String message) {
+                        sendMessage(dialog, message);
                         AppApplication.getInstance().setRefresh(true);
                         mGroupObject.setQuickGroupId(dialog.getDialogId());
                         Call<ServerResponse<OfflineDao>> call = Singleton.getInstance()
@@ -211,33 +212,30 @@ public class AddGroupViewModel implements AddKittyRulesListener,
     }
 
     /**
-     * @param roomID
      * @param message
-     * @param groupChatManager
      */
-    private void sendMessage(String roomID, String message, QBGroupChatManager groupChatManager) {
+    private void sendMessage(final QBChatDialog dialog, String message) {
         // TODO Join group and send message
         DiscussionHistory history = new DiscussionHistory();
         history.setMaxStanzas(0);
 
-        final QBGroupChat currentChatRoom = groupChatManager.
-                createGroupChat(roomID);
         final String finalMessage = message;
-        currentChatRoom.join(history, new QBEntityCallback() {
+        ChatHelper.getInstance().join(dialog, new QBEntityCallback<Void>() {
             @Override
-            public void onSuccess(Object o, Bundle bundle) {
+            public void onSuccess(Void aVoid, Bundle bundle) {
                 QBChatMessage chatMessage = new QBChatMessage();
                 chatMessage.setBody(finalMessage);
                 chatMessage.setProperty("save_to_history", "1"); // Save to Chat 2.0 history
                 try {
-                    currentChatRoom.sendMessage(chatMessage);
+                    dialog.sendMessage(chatMessage);
                 } catch (SmackException.NotConnectedException | IllegalStateException e) {
                     AppLog.e(TAG, e.getMessage(), e);
                 }
             }
 
             @Override
-            public void onError(QBResponseException errors) {
+            public void onError(QBResponseException e) {
+
             }
         });
     }
@@ -528,11 +526,11 @@ public class AddGroupViewModel implements AddKittyRulesListener,
      */
     private class Task implements Runnable {
 
-        final QBDialog dialog;
+        final QBChatDialog dialog;
         final String message;
         final QBGroupChatManager groupChatManager;
 
-        Task(QBDialog dg, String msg, QBGroupChatManager gManager) {
+        Task(QBChatDialog dg, String msg, QBGroupChatManager gManager) {
             dialog = dg;
             message = msg;
             groupChatManager = gManager;

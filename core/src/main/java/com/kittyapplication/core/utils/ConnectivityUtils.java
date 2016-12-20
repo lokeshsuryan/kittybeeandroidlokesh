@@ -13,7 +13,7 @@ public class ConnectivityUtils {
      * Check Internet Available or Not
      */
     public static boolean checkInternetConnection(final Context context) {
-        final ConnectivityManager conMgr = (ConnectivityManager) context
+        final ConnectivityManager conMgr = (ConnectivityManager) CoreApp.getInstance()
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (conMgr.getActiveNetworkInfo() != null
                 && conMgr.getActiveNetworkInfo().isAvailable()

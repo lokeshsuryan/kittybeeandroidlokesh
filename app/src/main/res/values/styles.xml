@@ -121,13 +121,13 @@
     <style name="profileLabelStyle">
         <item name="android:textColor">@color/black</item>
         <item name="android:textSize">@dimen/h6</item>
-        <item name="android:layout_weight">0.5</item>
+        <item name="android:layout_weight">0.6</item>
     </style>
 
     <style name="profileEditTextStyle">
         <item name="android:textSize">@dimen/h5</item>
         <item name="android:gravity">left</item>
-        <item name="android:layout_weight">1.5</item>
+        <item name="android:layout_weight">1.4</item>
         <item name="android:imeOptions">actionDone</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="android:layout_marginLeft">@dimen/common_5_dp</item>

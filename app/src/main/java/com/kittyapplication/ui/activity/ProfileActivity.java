@@ -142,8 +142,21 @@ public class ProfileActivity extends BaseActivity implements DateListener, Adapt
         if (intent.hasExtra(AppConstant.USER_PROFILE_ID)) {
             mIsLoginUser = false;
             showProgressDialog();
-            QBUsers.getUser(intent.getIntExtra(AppConstant.USER_PROFILE_ID, 0),
+           /* QBUsers.getUser(intent.getIntExtra(AppConstant.USER_PROFILE_ID, 0),
                     new QBEntityCallback<QBUser>() {
+                        @Override
+                        public void onSuccess(QBUser qbUser, Bundle bundle) {
+                            mViewModel.setData(qbUser.getLogin().substring(1));
+                        }
+
+                        @Override
+                        public void onError(QBResponseException e) {
+                            AppLog.d(TAG, "onError: " + e.getMessage());
+                        }
+                    });*/
+
+            QBUsers.getUser(intent.getIntExtra(AppConstant.USER_PROFILE_ID, 0))
+                    .performAsync(new QBEntityCallback<QBUser>() {
                         @Override
                         public void onSuccess(QBUser qbUser, Bundle bundle) {
                             mViewModel.setData(qbUser.getLogin().substring(1));

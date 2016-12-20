@@ -4,7 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.kittyapplication.chat.utils.Consts;
 import com.kittyapplication.core.utils.SharedPrefsHelper;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
+import com.quickblox.chat.model.QBChatMessage;
+import com.quickblox.chat.model.QBDialogType;
+import com.quickblox.users.model.QBUser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,12 +15,16 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class QbDialogHolder {
 
     private static QbDialogHolder instance;
-    private List<QBDialog> dialogList;
+    private List<QBChatDialog> dialogList;
 
     public static synchronized QbDialogHolder getInstance() {
         if (instance == null) {
@@ -30,7 +37,7 @@ public class QbDialogHolder {
         dialogList = getListFromPreference();
     }
 
-    private synchronized void saveIntoPreference(List<QBDialog> dialogs) {
+    private synchronized void saveIntoPreference(List<QBChatDialog> dialogs) {
         if (dialogs != null && dialogs.size() > 0) {
             String strDialogs = new Gson().toJson(dialogs);
             try {
@@ -39,7 +46,7 @@ public class QbDialogHolder {
                     JSONObject json = jsonArray.getJSONObject(i);
                     if (json.has("sdf")) {
                         json.remove("sdf");
-                        System.out.println("After QBDialog = > " + strDialogs);
+                        System.out.println("After QBChatDialog = > " + strDialogs);
                     }
                 }
                 strDialogs = jsonArray.toString();
@@ -50,17 +57,17 @@ public class QbDialogHolder {
         }
     }
 
-    private ArrayList<QBDialog> getListFromPreference() {
+    private ArrayList<QBChatDialog> getListFromPreference() {
         String json = SharedPrefsHelper.getInstance().get(Consts.PREF_KEY_DIALOGS, null);
         if (json != null) {
-            Type type = new TypeToken<ArrayList<QBDialog>>() {
+            Type type = new TypeToken<ArrayList<QBChatDialog>>() {
             }.getType();
             return new Gson().fromJson(json, type);
         }
         return new ArrayList<>();
     }
 
-    public List<QBDialog> getDialogList() {
+    public List<QBChatDialog> getDialogList() {
         return dialogList;
     }
 
@@ -70,14 +77,14 @@ public class QbDialogHolder {
     }
 
 
-    public synchronized void addDialogToList(QBDialog dialog) {
+    public synchronized void addDialogToList(QBChatDialog dialog) {
         if (!dialogList.contains(dialog)) {
             dialogList.add(dialog);
             saveIntoPreference(dialogList);
         }
     }
 
-    public synchronized void addDialogToList(QBDialog dialog, int pos) {
+    public synchronized void addDialogToList(QBChatDialog dialog, int pos) {
         if (!dialogList.contains(dialog)) {
             dialogList.add(pos, dialog);
             saveIntoPreference(dialogList);
@@ -86,14 +93,14 @@ public class QbDialogHolder {
         }
     }
 
-    public synchronized void addDialogs(List<QBDialog> dialogs) {
+    public synchronized void addDialogs(List<QBChatDialog> dialogs) {
         for (int i = 0; i < dialogs.size(); i++) {
             addDialogToList(dialogs.get(i), i);
         }
     }
 
-    public QBDialog getQBDialogByUserId(Integer id) {
-        for (QBDialog dialog : dialogList) {
+    public QBChatDialog getQBChatDialogByUserId(Integer id) {
+        for (QBChatDialog dialog : dialogList) {
             if (dialog.getUserId() == id) {
                 return dialog;
             }
@@ -101,8 +108,8 @@ public class QbDialogHolder {
         return null;
     }
 
-    public QBDialog getQBDialogByLogin(Integer id) {
-        for (QBDialog dialog : dialogList) {
+    public QBChatDialog getQBChatDialogByLogin(Integer id) {
+        for (QBChatDialog dialog : dialogList) {
             if (dialog.getUserId() == id) {
                 return dialog;
             }
@@ -110,8 +117,8 @@ public class QbDialogHolder {
         return null;
     }
 
-    public QBDialog getQBDialogByDialogId(String id) {
-        for (QBDialog dialog : dialogList) {
+    public QBChatDialog getQBChatDialogByDialogId(String id) {
+        for (QBChatDialog dialog : dialogList) {
             if (dialog.getDialogId().equals(id)) {
                 return dialog;
             }
@@ -137,7 +144,7 @@ public class QbDialogHolder {
     public int getDialogIndex(String dialogId) {
         try {
             for (int i = 0; i < dialogList.size(); i++) {
-                QBDialog dialog = dialogList.get(i);
+                QBChatDialog dialog = dialogList.get(i);
                 if (dialog.getDialogId().equals(dialogId)) {
                     return i;
                 }
@@ -149,10 +156,10 @@ public class QbDialogHolder {
         }
     }
 
-    public synchronized void changeIndex(int index, QBDialog qbdialog) {
+    public synchronized void changeIndex(int index, QBChatDialog qbdialog) {
         try {
             for (int i = 0; i < dialogList.size(); i++) {
-                QBDialog dialog = dialogList.get(i);
+                QBChatDialog dialog = dialogList.get(i);
                 String dialogId = qbdialog.getDialogId();
                 if (dialog.getDialogId().equals(dialogId)) {
                     dialogList.remove(i);
@@ -162,6 +169,124 @@ public class QbDialogHolder {
             }
             saveIntoPreference(dialogList);
         } catch (Exception e) {
+        }
+    }
+
+    /**
+     * Upgraded version code
+     */
+
+    private Map<String, QBChatDialog> dialogsMap;
+
+//    public static synchronized QbDialogHolder getInstance() {
+//        if (instance == null) {
+//            instance = new QbDialogHolder();
+//        }
+//        return instance;
+//    }
+//
+//    private QbDialogHolder() {
+//        dialogsMap = new TreeMap<>();
+//    }
+
+    public Map<String, QBChatDialog> getDialogs() {
+        return getSortedMap(dialogsMap);
+    }
+
+    public QBChatDialog getChatDialogById(String dialogId){
+        return dialogsMap.get(dialogId);
+    }
+
+//    public void clear() {
+//        dialogsMap.clear();
+//    }
+
+    public void addDialog(QBChatDialog dialog) {
+        if (dialog != null) {
+            dialogsMap.put(dialog.getDialogId(), dialog);
+        }
+    }
+//
+//    public void addDialogs(List<QBChatDialog> dialogs) {
+//        for (QBChatDialog dialog : dialogs) {
+//            addDialog(dialog);
+//        }
+//    }
+
+    public void deleteDialogs(Collection<QBChatDialog> dialogs) {
+        for (QBChatDialog dialog : dialogs) {
+            deleteDialog(dialog);
+        }
+    }
+
+    public void deleteDialogs(ArrayList<String> dialogsIds) {
+        for (String dialogId : dialogsIds) {
+            deleteDialog(dialogId);
+        }
+    }
+
+    public void deleteDialog(QBChatDialog chatDialog){
+        dialogsMap.remove(chatDialog.getDialogId());
+    }
+
+    public void deleteDialog(String dialogId){
+        dialogsMap.remove(dialogId);
+    }
+
+    public boolean hasDialogWithId(String dialogId){
+        return dialogsMap.containsKey(dialogId);
+    }
+
+    public boolean hasPrivateDialogWithUser(QBUser user){
+        return getPrivateDialogWithUser(user) != null;
+    }
+
+    public QBChatDialog getPrivateDialogWithUser(QBUser user){
+        for (QBChatDialog chatDialog : dialogsMap.values()){
+            if (QBDialogType.PRIVATE.equals(chatDialog.getType())
+                    && chatDialog.getOccupants().contains(user.getId())){
+                return chatDialog;
+            }
+        }
+
+        return null;
+    }
+
+    private Map<String, QBChatDialog> getSortedMap(Map <String, QBChatDialog> unsortedMap){
+        Map <String, QBChatDialog> sortedMap = new TreeMap(new LastMessageDateSentComparator(unsortedMap));
+        sortedMap.putAll(unsortedMap);
+        return sortedMap;
+    }
+
+    public void updateDialog(String dialogId, QBChatMessage qbChatMessage){
+        QBChatDialog updatedDialog = getChatDialogById(dialogId);
+        updatedDialog.setLastMessage(qbChatMessage.getBody());
+        updatedDialog.setLastMessageDateSent(qbChatMessage.getDateSent());
+        updatedDialog.setUnreadMessageCount(updatedDialog.getUnreadMessageCount() != null
+                ? updatedDialog.getUnreadMessageCount() + 1 : 1);
+        updatedDialog.setLastMessageUserId(qbChatMessage.getSenderId());
+
+        dialogsMap.put(updatedDialog.getDialogId(), updatedDialog);
+    }
+
+    static class LastMessageDateSentComparator implements Comparator<String> {
+        Map<String, QBChatDialog> map;
+
+        public LastMessageDateSentComparator(Map <String, QBChatDialog> map) {
+
+            this.map = map;
+        }
+
+        public int compare(String keyA, String keyB) {
+
+            long valueA = map.get(keyA).getLastMessageDateSent();
+            long valueB = map.get(keyB).getLastMessageDateSent();
+
+            if (valueB < valueA){
+                return -1;
+            } else {
+                return 1;
+            }
         }
     }
 }

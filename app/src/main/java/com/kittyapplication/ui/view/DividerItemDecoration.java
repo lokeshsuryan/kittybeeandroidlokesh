@@ -1,9 +1,7 @@
 package com.kittyapplication.ui.view;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -31,9 +29,9 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
 
     public DividerItemDecoration(Context context, int orientation) {
 //        final TypedArray a = context.obtainStyledAttributes(ATTRS);
-        mDivider = ResourceUtils.getDrawable(R.drawable.item_divider);
-        marginFromLeft = ResourceUtils.getDimen(R.dimen.common_48_dp);
-        marginFromLeft += ResourceUtils.getDimen(R.dimen.activity_horizontal_margin) * 2;
+        mDivider = ResourceUtils.getDrawable(context, R.drawable.item_divider);
+        marginFromLeft = ResourceUtils.getDimen(context, R.dimen.common_48_dp);
+        marginFromLeft += ResourceUtils.getDimen(context, R.dimen.activity_horizontal_margin) * 2;
 //        a.recycle();
 //        setOrientation(orientation);
     }

@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import com.kittyapplication.model.OfflineDao;
+import com.kittyapplication.model.OfflineSummeryMembers;
 import com.kittyapplication.model.ServerResponse;
 import com.kittyapplication.rest.Singleton;
 import com.kittyapplication.sqlitedb.Operations;
@@ -117,9 +118,13 @@ public class OfflineSupportIntentService extends IntentService {
                     String groupId = list.get(i).getGroupID();
                     Operations.insertKittyRules(mContext, list.get(i).getKittyRules(), groupId);
 
-                    if (Utils.isValidList(list.get(i).getSummaryMembers().getData()))
-                        Operations.insertIntoSummary(mContext, list.get(i).getSummaryMembers().getData(), groupId);
-
+                    if (Utils.isValidList(list.get(i).getSummaryMembers().getData())) {
+                        OfflineSummeryMembers members = new OfflineSummeryMembers();
+                        members.setData(list.get(i).getSummaryMembers().getData());
+                        members.setKittynext(list.get(i).getSummaryMembers().getKittynext());
+                        members.setCount(String.valueOf(list.get(i).getSummaryMembers().getCount()));
+                        Operations.insertIntoSummary(mContext, members, groupId);
+                    }
                     if (list.get(i).getVenueData() != null)
                         Operations.insertVenue(mContext, list.get(i).getVenueData(), false);
 

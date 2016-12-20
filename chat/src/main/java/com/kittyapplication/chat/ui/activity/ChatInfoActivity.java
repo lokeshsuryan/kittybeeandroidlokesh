@@ -8,7 +8,7 @@ import android.widget.ListView;
 
 import com.kittyapplication.chat.ui.adapter.UsersAdapter;
 import com.kittyapplication.chat.utils.qb.QbUsersHolder;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.users.model.QBUser;
 import java.util.List;
 
@@ -16,9 +16,9 @@ public class ChatInfoActivity extends BaseActivity {
     private static final String EXTRA_DIALOG = "dialog";
 
     private ListView usersListView;
-    private QBDialog qbDialog;
+    private QBChatDialog qbDialog;
 
-    public static void start(Context context, QBDialog qbDialog) {
+    public static void start(Context context, QBChatDialog qbDialog) {
         Intent intent = new Intent(context, ChatInfoActivity.class);
         intent.putExtra(EXTRA_DIALOG, qbDialog);
         context.startActivity(intent);

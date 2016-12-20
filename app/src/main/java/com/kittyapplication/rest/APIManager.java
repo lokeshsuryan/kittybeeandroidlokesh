@@ -1,10 +1,10 @@
 package com.kittyapplication.rest;
 
+import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
 import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.core.CoreApp;
 import com.kittyapplication.core.utils.ConnectivityUtils;
-import com.kittyapplication.core.utils.ErrorUtils;
 import com.kittyapplication.core.utils.ResourceUtils;
 import com.kittyapplication.core.utils.Toaster;
 import com.kittyapplication.model.AddAttendanceDao;
@@ -29,7 +29,6 @@ import com.kittyapplication.model.NotesResponseDao;
 import com.kittyapplication.model.NotificationDao;
 import com.kittyapplication.model.OfflineDao;
 import com.kittyapplication.model.ParticipantDao;
-import com.kittyapplication.model.PromotionalDao;
 import com.kittyapplication.model.RegisterResponseDao;
 import com.kittyapplication.model.ReqAddMember;
 import com.kittyapplication.model.ReqChangeGroupName;
@@ -43,9 +42,11 @@ import com.kittyapplication.model.SummaryListDao;
 import com.kittyapplication.model.VenueResponseDao;
 import com.kittyapplication.ui.executor.ExecutorThread;
 import com.kittyapplication.utils.LoginUserPrefHolder;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
+import com.quickblox.chat.model.QBChatMessage;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.request.QBRequestGetBuilder;
+import com.quickblox.users.model.QBUser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,7 +102,7 @@ public class APIManager {
         });
     }
 
-    public void getPromotionalData(String id) {
+    /*public void getPromotionalData(String id) {
         Call<ServerResponse<List<PromotionalDao>>> call = restClient.getPromotionalData(id);
         call.enqueue(new Callback<ServerResponse<List<PromotionalDao>>>() {
             @Override
@@ -114,7 +115,7 @@ public class APIManager {
 
             }
         });
-    }
+    }*/
 
     public void getProfile() {
         Call<ServerResponse<MyProfileResponseDao>> call = restClient.profile(user.getUserID());
@@ -676,17 +677,43 @@ public class APIManager {
         });
     }
 
-    public void loadDialog(final QBEntityCallback<ArrayList<QBDialog>> callback) {
+    public void loadDialog(final int skip, final int limit, final QBEntityCallback<ArrayList<QBChatDialog>> callback) {
         if (ConnectivityUtils.checkInternetConnection(CoreApp.getInstance())) {
             new ExecutorThread().startExecutor().postTask(new Runnable() {
                 @Override
                 public void run() {
                     QBRequestGetBuilder requestGetBuilder = new QBRequestGetBuilder();
-                    ChatHelper.getInstance().getDialogs(requestGetBuilder, callback, 0);
+                    ChatHelper.getInstance().getDialogs(requestGetBuilder, callback, skip, limit);
                 }
             });
         } else {
-            Toaster.longToast(ResourceUtils.getString(R.string.no_internet_available));
+            Toaster.longToast(ResourceUtils.getString(AppApplication.getInstance(), R.string.no_internet_available));
+        }
+    }
+
+    public void loadUser(final QBChatDialog qbDialog, final QBEntityCallback<ArrayList<QBUser>> callback) {
+        if (ConnectivityUtils.checkInternetConnection(CoreApp.getInstance())) {
+            new ExecutorThread().startExecutor().postTask(new Runnable() {
+                @Override
+                public void run() {
+                    ChatHelper.getInstance().getUsersFromDialog(qbDialog, callback);
+                }
+            });
+        } else {
+            Toaster.longToast(ResourceUtils.getString(AppApplication.getInstance(), R.string.no_internet_available));
+        }
+    }
+
+    public void loadChatHistory(final QBChatDialog qbDialog, final int pageNo, final QBEntityCallback<ArrayList<QBChatMessage>> callback) {
+        if (ConnectivityUtils.checkInternetConnection(CoreApp.getInstance())) {
+//            new ExecutorThread().startExecutor().postTask(new Runnable() {
+//                @Override
+//                public void run() {
+            ChatHelper.getInstance().loadChatHistory(qbDialog, pageNo, callback);
+//                }
+//            });
+        } else {
+            Toaster.longToast(ResourceUtils.getString(AppApplication.getInstance(), R.string.no_internet_available));
         }
     }
 }

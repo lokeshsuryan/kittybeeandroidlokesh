@@ -5,12 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 
 import com.kittyapplication.R;
 import com.kittyapplication.custom.CustomTextViewBold;
 import com.kittyapplication.custom.CustomTextViewNormal;
 import com.kittyapplication.custom.RoundedImageView;
 import com.kittyapplication.model.ParticipantMember;
+import com.kittyapplication.utils.AlertDialogUtils;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.ImageUtils;
@@ -66,7 +68,7 @@ public class ParticipantAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         Holder viewHolder; // view lookup cache stored in tag
         try {
             if (convertView == null) {
@@ -111,6 +113,7 @@ public class ParticipantAdapter extends BaseAdapter {
                 String[] currentHost = mList.get(position).getCurrentHost().split("-!-");
                 String[] admin = mList.get(position).getIsAdmin().split("-!-");
                 String[] hosted = mList.get(position).getHost().split("-!-");
+                String[] userIDs = mList.get(position).getUserId().split("-!-");
 
                 if (number.length == 1) {
                     String phone = number.length > 0 ? number[0] : "";
@@ -160,7 +163,6 @@ public class ParticipantAdapter extends BaseAdapter {
                         viewHolder.txtAdmin.setVisibility(View.VISIBLE);
                     }
 
-
                 } else {
                     String phone = number.length > 0 ? number[0] : "";
                     phone = phone.replace(AppConstant.SEPERATOR_STRING, "");
@@ -185,8 +187,10 @@ public class ParticipantAdapter extends BaseAdapter {
 
                     String userNameWith = null;
                     try {
-                        userNameWith = name.length > 0 ? name[1] : "";
-                        userNameWith = userNameWith.replace(AppConstant.SEPERATOR_STRING, "");
+                        if (userIDs != null && userIDs.length == 2) {
+                            userNameWith = name.length > 0 ? name[1] : "";
+                            userNameWith = userNameWith.replace(AppConstant.SEPERATOR_STRING, "");
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -218,7 +222,6 @@ public class ParticipantAdapter extends BaseAdapter {
                             viewHolder.txtNotHosted.setVisibility(View.GONE);
                         }
                     }
-
                 }
 
             } else {
@@ -257,6 +260,35 @@ public class ParticipantAdapter extends BaseAdapter {
                     }
                 }
             }
+
+
+            //Set Image Click Listener
+            final String[] userIDs = mList.get(position)
+                    .getUserId().split(AppConstant.SEPERATOR_STRING);
+
+            if (mList.get(position).getNumber().contains(AppConstant.SEPERATOR_STRING)) {
+                if (userIDs.length == 1) {
+                    String id = userIDs.length > 0 ? userIDs[0] : "";
+                    openProfileActivity(id, viewHolder.imgUser,
+                            viewHolder.txtMemberName.getText().toString());
+                } else {
+                    String id = userIDs.length > 0 ? userIDs[0] : "";
+                    String idWith = userIDs.length > 0 ? userIDs[1] : "";
+                    openProfileActivity(id,
+                            viewHolder.imgUser,
+                            viewHolder.txtMemberName.getText().toString());
+
+                    openProfileActivity(idWith,
+                            viewHolder.imgUserWith,
+                            viewHolder.txtMemberNameWith.getText().toString());
+                }
+            } else {
+                openProfileActivity(mList.get(position).getUserId(),
+                        viewHolder.imgUser
+                        , viewHolder.txtMemberName.getText().toString());
+            }
+
+
         } catch (Exception e) {
 
         }
@@ -276,4 +308,20 @@ public class ParticipantAdapter extends BaseAdapter {
         return flag;
     }
 
+    private void openProfileActivity(String userID, ImageView view, String userName) {
+        view.setTag(userID);
+        view.setTag(R.id.imgParticipantWith, userName);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String id = (String) v.getTag();
+                String userName = (String) v.getTag(R.id.imgParticipantWith);
+                if (Utils.isValidString(id))
+                    Utils.openProfileActivity(mContext, id);
+                else
+                    AlertDialogUtils.showSnackToast(mContext.getResources()
+                            .getString(R.string.user_id_warning, userName), mContext);
+            }
+        });
+    }
 }

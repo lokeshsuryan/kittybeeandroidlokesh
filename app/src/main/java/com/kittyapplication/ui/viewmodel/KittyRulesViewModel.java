@@ -18,6 +18,7 @@ import android.widget.Spinner;
 import com.google.gson.Gson;
 import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
+import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.chat.utils.qb.QbDialogUtils;
 import com.kittyapplication.chat.utils.qb.callback.QBGetGroupID;
 import com.kittyapplication.custom.DialogDateTimePicker;
@@ -43,7 +44,7 @@ import com.kittyapplication.utils.Utils;
 import com.quickblox.chat.QBGroupChat;
 import com.quickblox.chat.QBGroupChatManager;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 
@@ -76,7 +77,7 @@ public class KittyRulesViewModel implements View.OnTouchListener, DateListener, 
     private boolean flag = false;
     private boolean isUpdate = false;
     private ChatData mChatData;
-    private QBDialog mQbDialog;
+    private QBChatDialog mQbDialog;
 
     public KittyRulesViewModel(RuleActivity activity) {
         mActivity = activity;
@@ -142,10 +143,9 @@ public class KittyRulesViewModel implements View.OnTouchListener, DateListener, 
                         , ""
                         , new QBGetGroupID() {
                             @Override
-                            public void getQuickBloxGroupID(QBDialog dialog, String message,
-                                                            QBGroupChatManager groupChatManager) {
+                            public void getQuickBloxGroupID(QBChatDialog dialog, String message) {
                                 AppApplication.getInstance().setRefresh(true);
-                                sendMessage(dialog.getRoomJid(), message, groupChatManager);
+                                sendMessage(dialog, message);
                                 mQbDialog = dialog;
                                 group.setQuickGroupId(dialog.getDialogId());
                                 Call<ServerResponse<OfflineDao>> call = Singleton.getInstance()
@@ -175,33 +175,30 @@ public class KittyRulesViewModel implements View.OnTouchListener, DateListener, 
     }
 
     /**
-     * @param roomID
+     * @param dialog
      * @param message
-     * @param groupChatManager
      */
-    private void sendMessage(String roomID, String message, QBGroupChatManager groupChatManager) {
+    private void sendMessage(final QBChatDialog dialog, final String message) {
         // TODO Join group and send message
         DiscussionHistory history = new DiscussionHistory();
         history.setMaxStanzas(0);
 
-        final QBGroupChat currentChatRoom = groupChatManager.
-                createGroupChat(roomID);
-        final String finalMessage = message;
-        currentChatRoom.join(history, new QBEntityCallback() {
+        ChatHelper.getInstance().join(dialog, new QBEntityCallback<Void>() {
             @Override
-            public void onSuccess(Object o, Bundle bundle) {
+            public void onSuccess(Void aVoid, Bundle bundle) {
                 QBChatMessage chatMessage = new QBChatMessage();
-                chatMessage.setBody(finalMessage);
+                chatMessage.setBody(message);
                 chatMessage.setProperty("save_to_history", "1"); // Save to Chat 2.0 history
                 try {
-                    currentChatRoom.sendMessage(chatMessage);
+                    dialog.sendMessage(chatMessage);
                 } catch (SmackException.NotConnectedException | IllegalStateException e) {
                     AppLog.e(TAG, e.getMessage(), e);
                 }
             }
 
             @Override
-            public void onError(QBResponseException errors) {
+            public void onError(QBResponseException e) {
+
             }
         });
     }

@@ -385,6 +385,10 @@ public class KittyBeeContract {
         public static final String QB_DIALOG = "qb_dialog";
         public static final String GROUP = "_group";
         public static final String QB_DIALOG_ID = "qb_dialog_id";
+        public static final String SYNCABLE = "syncable";
+//        public static final String IS_PRIVATE = "is_private";
+        public static final String PRIVATE_CHAT_MEMBER_ID = "private_chat_member_id";
+        public static final String LAST_MESSAGE_PAGE_NO = "last_message_page_no";
         public static final String QB_LAST_MSG_TIMESTAMP = "last_msg_time";
         /**
          * The content URI for this table.
@@ -412,7 +416,10 @@ public class KittyBeeContract {
                 QB_DIALOG,
                 CLEAR_MESSAGE,
                 DELETED,
+                SYNCABLE,
+                LAST_MESSAGE_PAGE_NO,
                 QB_LAST_MSG_TIMESTAMP,
+                PRIVATE_CHAT_MEMBER_ID,
                 TIMESTAMP
         };
     }

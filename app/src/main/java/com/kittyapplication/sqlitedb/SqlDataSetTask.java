@@ -85,7 +85,7 @@ public class SqlDataSetTask {
 
                 //TODO insert summary members
                 if (Utils.isValidList(offlineDao.getSummaryMembers().getData()))
-                    Operations.insertIntoSummary(mContext, offlineDao.getSummaryMembers().getData(), groupId);
+                    Operations.insertIntoSummary(mContext, offlineDao.getSummaryMembers(), groupId);
 
                 //TODO insert venue data
                 if (offlineDao.getVenueData() != null && offlineDao.getVenueData().getId() != null)

@@ -1,6 +1,7 @@
 package com.kittyapplication;
 
 import android.content.Context;
+import android.location.Location;
 
 import com.crashlytics.android.Crashlytics;
 import com.kittyapplication.chat.App;
@@ -24,6 +25,8 @@ public class AppApplication extends App {
     private static int selectedPosition = -1;
     private String updatedGroupId;
     private boolean isQbRefresh = false;
+    private Location location;
+    private ChatData chatData;
 
     @Override
     public void onCreate() {
@@ -103,5 +106,21 @@ public class AppApplication extends App {
 
     public void setQbRefresh(boolean qbRefresh) {
         isQbRefresh = qbRefresh;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
+    public ChatData getChatData() {
+        return chatData;
+    }
+
+    public void setChatData(ChatData chatData) {
+        this.chatData = chatData;
     }
 }

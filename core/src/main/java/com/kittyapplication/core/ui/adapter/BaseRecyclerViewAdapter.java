@@ -17,8 +17,10 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Re
     protected Context context;
     protected List<T> objectsList;
     protected PaginationHistoryListener paginationHistoryListener;
+    protected static final int FOOTER_VIEW = 2;
     private int previousGetCount = 0;
-
+    private boolean hasFooter = false;
+    protected String dataMsg;
     public BaseRecyclerViewAdapter(Context context) {
         this(context, new ArrayList<T>());
     }
@@ -34,8 +36,18 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Re
     }
 
     @Override
+    public int getItemViewType(int position) {
+        if (position == getCount())
+            return FOOTER_VIEW;
+        return super.getItemViewType(position);
+    }
+
+    @Override
     public int getItemCount() {
-        return objectsList.size();
+        if (hasFooter)
+            return objectsList.size() + 1;
+        else
+            return objectsList.size();
     }
 
     public int getCount() {
@@ -95,11 +107,11 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Re
 
     protected void downloadMore(int position) {
         try {
-            if (position == 0) {
+            if (position == (getCount() - 1)) {
                 if (paginationHistoryListener != null) {
-                    if (getItemCount() != previousGetCount) {
+                    if (getCount() != previousGetCount) {
                         paginationHistoryListener.downloadMore();
-                        previousGetCount = getItemCount();
+                        previousGetCount = getCount();
                     }
                 }
             }
@@ -107,4 +119,20 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Re
             e.printStackTrace();
         }
     }
+
+    public void setHasFooter(boolean hasFooter) {
+        this.hasFooter = hasFooter;
+    }
+
+    public boolean isHasFooter() {
+        return hasFooter;
+    }
+
+    public void setDataMsg(String dataMsg) {
+        this.dataMsg = dataMsg;
+    }
+
+//    public String getDataMsg() {
+//        return dataMsg;
+//    }
 }

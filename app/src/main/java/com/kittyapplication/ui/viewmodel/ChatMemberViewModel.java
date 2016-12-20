@@ -8,14 +8,16 @@ import android.net.Uri;
 
 import com.kittyapplication.model.storeg.ChatGroupMember;
 import com.kittyapplication.providers.KittyBeeContract;
+import com.kittyapplication.sqlitedb.DBQueryHandler;
 import com.kittyapplication.sqlitedb.MySQLiteHelper;
+import com.quickblox.users.model.QBUser;
 
 import java.util.ArrayList;
 
 /**
  * Created by MIT on 10/5/2016.
  */
-public class ChatMemberViewModel extends KittyViewModel{
+public class ChatMemberViewModel extends KittyViewModel {
     private final Context context;
 
     public ChatMemberViewModel(Context context) {
@@ -30,7 +32,8 @@ public class ChatMemberViewModel extends KittyViewModel{
         values.put(KittyBeeContract.GroupChatMember.MEMBER_NUMBER, member.getMemberNumber());
         values.put(KittyBeeContract.GroupChatMember.MEMBER_IMAGE, member.getImage());
         System.out.println("addMember::" + member.toString());
-        context.getContentResolver().insert(KittyBeeContract.GroupChatMember.CONTENT_URI, values);
+        DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
+        queryHandler.startInsert(0, 0, KittyBeeContract.GroupChatMember.CONTENT_URI, values);
     }
 
     public ArrayList<ChatGroupMember> getMembers(String dialogId) {
@@ -91,6 +94,19 @@ public class ChatMemberViewModel extends KittyViewModel{
         member.setMemberName(cursor.getString(2));
         member.setMemberNumber(cursor.getString(3));
         member.setImage(cursor.getBlob(4));
+        return member;
+    }
+
+    public ChatGroupMember getMember(QBUser user) {
+        return getMember(user, null);
+    }
+
+    public ChatGroupMember getMember(QBUser user, byte[] dp) {
+        ChatGroupMember member = new ChatGroupMember();
+        member.setMemberId(user.getId());
+        member.setMemberNumber(user.getPhone());
+        member.setMemberName(user.getFullName());
+        member.setImage(dp);
         return member;
     }
 }

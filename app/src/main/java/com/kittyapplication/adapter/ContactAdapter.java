@@ -160,7 +160,7 @@ public class ContactAdapter extends BaseSelectedRecyclerViewAdapter<ContactDao> 
                             user.setFullName(contact.getName());
                             user.setCustomData(contact.getImage());
                             ChatActivity.startForResult((Activity) mContext,
-                                    AppConstant.REQUEST_UPDATE_DIALOG, 0, user);
+                                    AppConstant.REQUEST_UPDATE_DIALOG, 0, user, -1);
 //                            ChatActivity.startForResult(mContext,
 //                                    AppConstant.REQUEST_UPDATE_DIALOG, null,
 //                                    user, contact.getUserId(), null);

@@ -17,7 +17,6 @@ import com.kittyapplication.utils.PreferanceUtils;
 public class SplashActivity extends ChatSplashActivity {
 
     private static final String TAG = SplashActivity.class.getSimpleName();
-    private static final int SPLASH_SCREEN_TIME_OUT = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +35,7 @@ public class SplashActivity extends ChatSplashActivity {
     }
 
     protected String getAppName() {
-        return ResourceUtils.getString(R.string.app_name);
+        return ResourceUtils.getString(this, R.string.app_name);
     }
 
     protected void proceedToTheNextActivity() {
@@ -51,17 +50,5 @@ public class SplashActivity extends ChatSplashActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-//        new Handler().postDelayed(runnable, SPLASH_SCREEN_TIME_OUT);
     }
-
-    /**
-     *
-     */
-    final Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            proceedToTheNextActivity();
-        }
-    };
 }

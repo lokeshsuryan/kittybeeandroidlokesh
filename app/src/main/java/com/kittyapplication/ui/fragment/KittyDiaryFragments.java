@@ -130,6 +130,7 @@ public class KittyDiaryFragments extends Fragment implements View.OnClickListene
         mFabMenu.close(true);
         switch (v.getId()) {
             case R.id.btnSelectHost:
+                mViewmodel.submitDiaryData(mAdapter);
                 mViewmodel.actionSelectHost();
                 break;
 

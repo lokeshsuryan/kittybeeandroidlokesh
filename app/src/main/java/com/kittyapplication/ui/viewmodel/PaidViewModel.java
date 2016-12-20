@@ -24,6 +24,7 @@ import com.kittyapplication.utils.AlertDialogUtils;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
 import com.kittyapplication.utils.Utils;
+import com.quickblox.chat.model.QBChatDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,7 @@ public class PaidViewModel {
                             null, new QbUpdateDialogListener() {
 
                                 @Override
-                                public void onSuccessResponce() {
+                                public void onSuccessResponse(QBChatDialog dialog)  {
                                     AppApplication.getInstance().setRefresh(true);
                                     ReqAddMember addMember = new ReqAddMember();
                                     addMember.setGroupId(mMemberData.getGroupId());

@@ -20,29 +20,36 @@ import android.view.View;
 
 import com.kittyapplication.AppApplication;
 import com.kittyapplication.R;
+import com.kittyapplication.chat.managers.DialogsManager;
 import com.kittyapplication.chat.utils.chat.ChatHelper;
-import com.kittyapplication.chat.utils.qb.QbDialogHolder;
+import com.kittyapplication.chat.utils.chat.QbChatDialogMessageListenerImp;
 import com.kittyapplication.chat.utils.qb.VerboseQbChatConnectionListener;
 import com.kittyapplication.core.utils.constant.GcmConsts;
 import com.kittyapplication.listener.SearchListener;
+import com.kittyapplication.rest.Singleton;
 import com.kittyapplication.ui.fragment.BeeChatFragment;
 import com.kittyapplication.ui.fragment.KittiesFragment;
 import com.kittyapplication.ui.viewmodel.HomeViewModel;
 import com.kittyapplication.utils.AlertDialogUtils;
 import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
-import com.kittyapplication.utils.KittyPrefHolder;
+import com.kittyapplication.utils.LocationUtils;
 import com.quickblox.chat.QBChatService;
 import com.quickblox.chat.QBGroupChat;
 import com.quickblox.chat.QBGroupChatManager;
+import com.quickblox.chat.QBIncomingMessagesManager;
 import com.quickblox.chat.QBPrivateChat;
 import com.quickblox.chat.QBPrivateChatManager;
+import com.quickblox.chat.QBRestChatService;
+import com.quickblox.chat.QBSystemMessagesManager;
 import com.quickblox.chat.exception.QBChatException;
+import com.quickblox.chat.listeners.QBChatDialogMessageListener;
 import com.quickblox.chat.listeners.QBGroupChatManagerListener;
 import com.quickblox.chat.listeners.QBMessageListener;
 import com.quickblox.chat.listeners.QBPrivateChatManagerListener;
+import com.quickblox.chat.listeners.QBSystemMessageListener;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 import com.quickblox.core.helper.StringifyArrayList;
@@ -55,32 +62,27 @@ import java.util.ArrayList;
 /**
  * Created by Pintu Riontech on 7/8/16.
  */
-public class HomeActivity extends ChatBaseActivity implements SearchListener {
+public class HomeActivity extends ChatBaseActivity implements SearchListener, DialogsManager.ManagingDialogsCallbacks {
     private static final String TAG = HomeActivity.class.getSimpleName();
+
+    private QBChatDialogMessageListener allDialogsMessagesListener;
+    private SystemMessagesListener systemMessagesListener;
+    private QBSystemMessagesManager systemMessagesManager;
+    private QBIncomingMessagesManager incomingMessagesManager;
+    private DialogsManager dialogsManager;
+
+
     private TabLayout mTabViewHome;
     private ViewPager mVpHome;
     private HomeViewModel mViewModel;
 
     private QBRequestGetBuilder requestBuilder;
     public boolean isActivityForeground;
-    private QBPrivateChatManagerListener privateChatManagerListener;
-    private QBGroupChatManagerListener groupChatManagerListener;
-    private ConnectionListener chatConnectionListener;
     private BroadcastReceiver pushBroadcastReceiver;
-    private BeeChatFragment chatsFragment;
-    private KittiesFragment mKittiesFragment;
-    private BeeChatFragment mBeeChatFragment;
-    private static final String QUICK_BLOX_PASSWORD = "KittyBeeArun";
-    private boolean isLoading = false;
-    private int skip = 0;
     private UpdateGroupReceiver updateGroupReceiver;
-    private boolean isUpdatedData = false;
-
-    private WorkerThread mQbDialogWorkerThread;
-
-    private ArrayList<String> chatMessageIds;
-    private QBDialog updateDialog;
     private ActionMode currentActionMode;
+
+    private LocationUtils mLocationUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,53 +93,22 @@ public class HomeActivity extends ChatBaseActivity implements SearchListener {
         AppLog.d(TAG, "GCM" + AppApplication.getGCMId());
 
         pushBroadcastReceiver = new PushBroadcastReceiver();
-
-        privateChatManagerListener = new QBPrivateChatManagerListener() {
-            @Override
-            public void chatCreated(QBPrivateChat qbPrivateChat, boolean createdLocally) {
-                Log.d(TAG, "privateChatManagerListener$chatCreated");
-//                loadDialogsFromQb();
-                if (!createdLocally) {
-                    qbPrivateChat.addMessageListener(privateChatMessageListener);
-                }
-            }
-        };
-
-        groupChatManagerListener = new QBGroupChatManagerListener() {
-            @Override
-            public void chatCreated(QBGroupChat qbGroupChat) {
-                requestBuilder.setSkip(0);
-                Log.d(TAG, "groupChatManagerListener$chatCreated");
-//                loadDialogsFromQb();
-                qbGroupChat.addMessageListener(new QBMessageListener<QBGroupChat>() {
-                    @Override
-                    public void processMessage(QBGroupChat qbGroupChat, QBChatMessage qbChatMessage) {
-                        AppLog.d(TAG, "Message Received :: >" + qbChatMessage.getBody());
-                        mViewModel.updatedMessage(qbChatMessage);
-                    }
-
-                    @Override
-                    public void processError(QBGroupChat qbGroupChat, QBChatException e, QBChatMessage qbChatMessage) {
-
-                    }
-                });
-            }
-        };
-
         requestBuilder = new QBRequestGetBuilder();
-        chatConnectionListener = new VerboseQbChatConnectionListener(getSnackbarAnchorView()) {
 
-            @Override
-            public void reconnectionSuccessful() {
-                super.reconnectionSuccessful();
-                Log.i(TAG, "reconnectionSuccessful: ");
+        /**
+         * Upgraded version code
+         */
 
-//                requestBuilder.setSkip(0);
-            }
-        };
+        if (isAppSessionActive) {
+            allDialogsMessagesListener = new AllDialogsMessageListener();
+            systemMessagesListener = new SystemMessagesListener();
+        }
+
+        dialogsManager = new DialogsManager();
+
         initUI(view);
         setUpSearchBar(getSearchbar(), this);
-
+        startLocationService();
     }
 
 
@@ -218,7 +189,6 @@ public class HomeActivity extends ChatBaseActivity implements SearchListener {
         super.onResume();
         registerUpdateGroupReceiver();
 
-        ChatHelper.getInstance().addConnectionListener(chatConnectionListener);
         isActivityForeground = true;
 
         LocalBroadcastManager.getInstance(this).registerReceiver(pushBroadcastReceiver,
@@ -240,7 +210,6 @@ public class HomeActivity extends ChatBaseActivity implements SearchListener {
     @Override
     protected void onPause() {
         super.onPause();
-        ChatHelper.getInstance().removeConnectionListener(chatConnectionListener);
         isActivityForeground = false;
         LocalBroadcastManager.getInstance(this).unregisterReceiver(pushBroadcastReceiver);
     }
@@ -260,64 +229,42 @@ public class HomeActivity extends ChatBaseActivity implements SearchListener {
     @Override
     public void onSessionCreated(boolean success) {
         if (success) {
-//            loadDialogsFromQb();
             registerQbChatListeners();
         }
     }
 
-    /**
-     *
-     */
-    QBMessageListener<QBPrivateChat> privateChatMessageListener = new QBMessageListener<QBPrivateChat>() {
-        @Override
-        public void processMessage(QBPrivateChat privateChat, final QBChatMessage chatMessage) {
-            requestBuilder.setSkip(0);
-            if (isActivityForeground) {
-                AppLog.d(TAG, "Message Received :: >" + chatMessage.getBody());
-                mViewModel.updatedMessage(chatMessage);
-            }
-        }
-
-        @Override
-        public void processError(QBPrivateChat privateChat, QBChatException error, QBChatMessage originMessage) {
-        }
-    };
-
     private void registerQbChatListeners() {
-        QBPrivateChatManager privateChatManager = QBChatService.getInstance().getPrivateChatManager();
-        QBGroupChatManager groupChatManager = QBChatService.getInstance().getGroupChatManager();
+        incomingMessagesManager = QBChatService.getInstance().getIncomingMessagesManager();
+        systemMessagesManager = QBChatService.getInstance().getSystemMessagesManager();
 
-        if (privateChatManager != null) {
-            privateChatManager.addPrivateChatManagerListener(privateChatManagerListener);
+        if (incomingMessagesManager != null) {
+            incomingMessagesManager.addDialogMessageListener(allDialogsMessagesListener != null
+                    ? allDialogsMessagesListener : new AllDialogsMessageListener());
         }
 
-        if (groupChatManager != null) {
-            groupChatManager.addGroupChatManagerListener(groupChatManagerListener);
+        if (systemMessagesManager != null) {
+            systemMessagesManager.addSystemMessageListener(systemMessagesListener != null
+                    ? systemMessagesListener : new SystemMessagesListener());
         }
+
+        dialogsManager.addManagingDialogsCallbackListener(this);
     }
 
     private void unregisterQbChatListeners() {
-        QBPrivateChatManager privateChatManager = QBChatService.getInstance().getPrivateChatManager();
-        QBGroupChatManager groupChatManager = QBChatService.getInstance().getGroupChatManager();
-        if (privateChatManager != null) {
-            privateChatManager.removePrivateChatManagerListener(privateChatManagerListener);
+
+        if (incomingMessagesManager != null) {
+            incomingMessagesManager.removeDialogMessageListrener(allDialogsMessagesListener);
         }
 
-        if (groupChatManager != null) {
-            groupChatManager.removeGroupChatManagerListener(groupChatManagerListener);
+        if (systemMessagesManager != null) {
+            systemMessagesManager.removeSystemMessageListener(systemMessagesListener);
         }
-    }
 
-    public void loadDialogsFromQb() {
-        mQbDialogWorkerThread = new WorkerThread("QBWorkerThread");
-        mQbDialogWorkerThread.start();
-        mQbDialogWorkerThread.prepareHandler();
-        mQbDialogWorkerThread.postTask(task);
+        dialogsManager.removeManagingDialogsCallbackListener(this);
     }
-
 
     public void setChatsFragment(BeeChatFragment chatsFragment) {
-        this.chatsFragment = chatsFragment;
+//        this.chatsFragment = chatsFragment;
     }
 
     @Override
@@ -328,16 +275,39 @@ public class HomeActivity extends ChatBaseActivity implements SearchListener {
             if (resultCode == RESULT_OK) {
                 switch (requestCode) {
                     case AppConstant.REQUEST_UPDATE_DIALOG:
-                        DialogWorkerThread workerThread = new
-                                DialogWorkerThread("DialogWorkerThread", data);
-                        workerThread.start();
-                        workerThread.prepareHandler();
-                        workerThread.postTask(dialogTask);
+                        updateItem(data);
+                        break;
+
+                    case 1000:
+                        if (mLocationUtils != null)
+                            mLocationUtils.initGoogleApi();
                         break;
                 }
             }
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    private void updateItem(Intent data) {
+        QBChatDialog dialog = (QBChatDialog) data.getExtras()
+                .getSerializable(AppConstant.UPDATED_DIALOG);
+        ArrayList<String> ids = (ArrayList<String>) data
+                .getSerializableExtra(ChatActivity.EXTRA_MARK_READ);
+
+        int index = data.getIntExtra(AppConstant.EXTRA_CLICKED_ITEM_INDEX, -1);
+        try {
+            if (dialog != null) {
+                AppLog.d(TAG, "Dialog::" + dialog);
+                mViewModel.updatedDialog(dialog, index);
+//                QbDialogHolder.getInstance().changeIndex(0, dialog);
+//                KittyPrefHolder.getInstance().updateQBDialog(0, dialog);
+                final StringifyArrayList<String> messagesIds = new StringifyArrayList<>();
+                messagesIds.addAll(ids);
+                markMessagesRead(messagesIds, dialog.getDialogId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -362,19 +332,7 @@ public class HomeActivity extends ChatBaseActivity implements SearchListener {
 
     private void markMessagesRead(StringifyArrayList<String> messagesIds, String dialogId) {
         if (messagesIds.size() > 0) {
-            QBChatService.markMessagesAsRead(dialogId, messagesIds, new QBEntityCallback<Void>() {
-                @Override
-                public void onSuccess(Void aVoid, Bundle bundle) {
-//                    loadDialogsFromQb();
-                }
-
-                @Override
-                public void onError(QBResponseException e) {
-
-                }
-            });
-        } else {
-//            loadDialogsFromQb(true, true);
+            QBRestChatService.markMessagesAsRead(dialogId, messagesIds);
         }
     }
 
@@ -391,120 +349,13 @@ public class HomeActivity extends ChatBaseActivity implements SearchListener {
         }
     }
 
-
-    /**
-     *
-     */
-    private class WorkerThread extends HandlerThread {
-        private Handler mWorkerHandler;
-
-        WorkerThread(String name) {
-            super(name);
-        }
-
-        void postTask(Runnable task) {
-            mWorkerHandler.post(task);
-        }
-
-        void prepareHandler() {
-            mWorkerHandler = new Handler(getLooper());
-        }
-    }
-
-    /**
-     *
-     */
-    Runnable task = new Runnable() {
-        @Override
-        public void run() {
-            if (!isLoading) {
-                isLoading = true;
-                ChatHelper.getInstance().getDialogs(requestBuilder, new QBEntityCallback<ArrayList<QBDialog>>() {
-                    @Override
-                    public void onSuccess(ArrayList<QBDialog> dialogs, Bundle bundle) {
-                        QbDialogHolder.getInstance().addDialogs(dialogs);
-                        int total = bundle.getInt("total_entries");
-
-                        isLoading = false;
-                        skip = QbDialogHolder.getInstance().getDialogList().size();
-                        mQbDialogWorkerThread.quit();
-
-                        if (total > skip) {
-                            loadDialogsFromQb();
-                        } else {
-                            skip = 0;
-                            /*if (mBeeChatFragment != null) {
-                                mBeeChatFragment.updateList();
-                            }*/
-                        }
-                    }
-
-                    @Override
-                    public void onError(QBResponseException e) {
-                        isLoading = false;
-                        skip = 0;
-                        mQbDialogWorkerThread.quit();
-                    }
-                }, skip);
-            }
-        }
-    };
-
     public void setKittiesFragment(KittiesFragment kitteisFragment) {
-        mKittiesFragment = kitteisFragment;
+//        mKittiesFragment = kitteisFragment;
     }
 
     public void setBeeChatFragment(BeeChatFragment beeChatFragment) {
-        mBeeChatFragment = beeChatFragment;
+//        mBeeChatFragment = beeChatFragment;
     }
-
-    /**
-     *
-     */
-    private class DialogWorkerThread extends HandlerThread {
-        private Handler mWorkerHandler;
-
-        DialogWorkerThread(String name, Intent data) {
-            super(name);
-
-            QBDialog dialog = (QBDialog) data.getExtras()
-                    .getSerializable(AppConstant.UPDATED_DIALOG);
-            ArrayList<String> ids = (ArrayList<String>) data
-                    .getSerializableExtra(ChatActivity.EXTRA_MARK_READ);
-            updateDialog = dialog;
-            chatMessageIds = ids;
-        }
-
-        void postTask(Runnable task) {
-            mWorkerHandler.post(task);
-        }
-
-        void prepareHandler() {
-            mWorkerHandler = new Handler(getLooper());
-        }
-    }
-
-    /**
-     *
-     */
-    Runnable dialogTask = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                if (updateDialog != null) {
-                    AppLog.d(TAG, "Dialog::" + updateDialog);
-                    mViewModel.updatedDialog(updateDialog);
-                    QbDialogHolder.getInstance().changeIndex(0, updateDialog);
-                    KittyPrefHolder.getInstance().updateQBDialog(0, updateDialog);
-                    final StringifyArrayList<String> messagesIds = new StringifyArrayList<>();
-                    messagesIds.addAll(chatMessageIds);
-                    markMessagesRead(messagesIds, updateDialog.getDialogId());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    };
 
     @Override
     public void getSearchString(String str) {
@@ -514,12 +365,14 @@ public class HomeActivity extends ChatBaseActivity implements SearchListener {
 
     @Override
     public void onSearchBarVisible() {
-
+        if (mViewModel != null)
+            mViewModel.isFilterApply(true);
     }
 
     @Override
     public void onSearchBarHide() {
-
+        if (mViewModel != null)
+            mViewModel.isFilterApply(false);
     }
 
     @Override
@@ -555,5 +408,64 @@ public class HomeActivity extends ChatBaseActivity implements SearchListener {
 
     public void setCurrentActionMode(ActionMode currentActionMode) {
         this.currentActionMode = currentActionMode;
+    }
+
+    private void startLocationService() {
+        mLocationUtils = Singleton.getInstance().getLocationUtils();
+        mLocationUtils.setActivity(this);
+        mLocationUtils.initGoogleApi();
+       /* if (mLocationUtils.getGoogleApiClient() != null) {
+            if (mLocationUtils.getGoogleApiClient().isConnected())
+                mLocationUtils.createLocationRequest();
+            else
+                mLocationUtils.initGoogleApi();
+        }*/
+    }
+
+    /******************************* Upgrade version code **********************/
+
+    @Override
+    public void onDialogCreated(QBChatDialog chatDialog) {
+
+    }
+
+    @Override
+    public void onDialogUpdated(String chatDialog) {
+
+    }
+
+    @Override
+    public void onNewDialogLoaded(QBChatDialog chatDialog) {
+
+    }
+
+    private class SystemMessagesListener implements QBSystemMessageListener {
+        @Override
+        public void processMessage(final QBChatMessage qbChatMessage) {
+//            dialogsManager.onSystemMessageReceived(qbChatMessage);
+            if (isActivityForeground) {
+                AppLog.d(TAG, "Message Received :: >" + qbChatMessage.getBody());
+                mViewModel.updatedMessage(qbChatMessage);
+            }
+        }
+
+        @Override
+        public void processError(QBChatException e, QBChatMessage qbChatMessage) {
+
+        }
+    }
+
+    private class AllDialogsMessageListener extends QbChatDialogMessageListenerImp {
+        @Override
+        public void processMessage(final String dialogId, final QBChatMessage qbChatMessage, Integer senderId) {
+//            if (!senderId.equals(ChatHelper.getCurrentUser().getId())) {
+//                dialogsManager.onGlobalMessageReceived(dialogId, qbChatMessage);
+//            }
+
+            if (isActivityForeground) {
+                AppLog.d(TAG, "Message Received :: >" + qbChatMessage.getBody());
+                mViewModel.updatedMessage(qbChatMessage);
+            }
+        }
     }
 }

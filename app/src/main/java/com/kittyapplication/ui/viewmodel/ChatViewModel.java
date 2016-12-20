@@ -1,42 +1,23 @@
 package com.kittyapplication.ui.viewmodel;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 
 import com.kittyapplication.R;
 import com.kittyapplication.adapter.ChatListAdapter;
 import com.kittyapplication.custom.ImageLoaderListenerUniversal;
 import com.kittyapplication.model.BannerDao;
-import com.kittyapplication.model.ChatData;
-import com.kittyapplication.model.ServerResponse;
-import com.kittyapplication.rest.Singleton;
-import com.kittyapplication.ui.activity.HomeActivity;
-import com.kittyapplication.ui.executor.ExecutorThread;
-import com.kittyapplication.ui.fragment.BeeChatFragment;
-import com.kittyapplication.ui.fragment.ChatsFragment;
-import com.kittyapplication.ui.viewinterface.FragmentViewModelInterface;
-import com.kittyapplication.utils.AppConstant;
 import com.kittyapplication.utils.AppLog;
-import com.kittyapplication.utils.GroupPrefHolder;
 import com.kittyapplication.utils.ImageUtils;
 import com.kittyapplication.utils.PreferanceUtils;
-import com.kittyapplication.utils.Utils;
 
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 /**
  * Created by Pintu Riontech on 8/8/16.

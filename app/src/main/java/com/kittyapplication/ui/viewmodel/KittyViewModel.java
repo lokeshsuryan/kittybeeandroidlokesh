@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2016 riontech-xten
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.kittyapplication.ui.viewmodel;
 
 import android.content.ContentResolver;
@@ -7,7 +23,8 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.google.gson.Gson;
-import com.kittyapplication.core.CoreApp;
+import com.kittyapplication.chat.utils.SharedPreferencesUtil;
+import com.kittyapplication.chat.utils.chat.ChatHelper;
 import com.kittyapplication.model.ChatData;
 import com.kittyapplication.model.Kitty;
 import com.kittyapplication.providers.KittyBeeContract;
@@ -17,35 +34,32 @@ import com.kittyapplication.sqlitedb.MySQLiteHelper;
 import com.kittyapplication.ui.executor.BackgroundExecutorThread;
 import com.kittyapplication.ui.executor.Interactor;
 import com.kittyapplication.utils.AppLog;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBDialogCustomData;
+import com.quickblox.chat.model.QBDialogType;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Created by MIT on 10/6/2016.
- */
+
 public class KittyViewModel {
     private static final String TAG = KittyViewModel.class.getSimpleName();
     private Context context;
     private static final String KEY_ID = "auto_increment_key";
-    final DBQueryHandler queryHandler;
-    private static final int PAGE_LIMIT = 150;
 
     public KittyViewModel(Context context) {
-        this.context = CoreApp.getInstance();
-        queryHandler = new DBQueryHandler(context.getContentResolver());
+        this.context = context;
     }
 
-    public int getKittyId(QBDialog dialog) {
+    public int getKittyId(QBChatDialog dialog) {
         return (Integer) dialog.getCustomData().get(KEY_ID);
     }
 
     public QBDialogCustomData getCustomData(int id) {
-        QBDialogCustomData data = new QBDialogCustomData();
+        QBDialogCustomData data = new QBDialogCustomData("Kitty");
         data.put(KEY_ID, id);
         return data;
     }
@@ -59,7 +73,7 @@ public class KittyViewModel {
         return Integer.parseInt(rawId);
     }
 
-    private String removeSDFFromQBDialog(String jsonStr) {
+    public String removeSDFFromQBDialog(String jsonStr) {
         try {
             if (jsonStr == null)
                 return jsonStr;
@@ -77,6 +91,7 @@ public class KittyViewModel {
     public void saveKitty(Kitty kitty) {
         Gson gson = new Gson();
         ContentValues values = new ContentValues();
+        DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
         try {
             if (kitty.getGroup() != null) {
                 values.put(KittyBeeContract.Kitties.GROUP_ID, kitty.getGroup().getGroupID());
@@ -88,6 +103,13 @@ public class KittyViewModel {
                 values.put(KittyBeeContract.Kitties.QB_DIALOG_ID, kitty.getQbDialog().getDialogId());
                 values.put(KittyBeeContract.Kitties.QB_LAST_MSG_TIMESTAMP, kitty.getQbDialog().getLastMessageDateSent());
                 values.put(KittyBeeContract.Kitties.QB_DIALOG, gson.toJson(kitty.getQbDialog()));
+                QBChatDialog chatDialog = kitty.getQbDialog();
+                if (chatDialog.getType().equals(QBDialogType.PRIVATE)) {
+                    List<Integer> members = new ArrayList<>();
+                    members.addAll(chatDialog.getOccupants());
+                    members.remove(SharedPreferencesUtil.getQbUser().getId());
+                    values.put(KittyBeeContract.Kitties.PRIVATE_CHAT_MEMBER_ID, members.get(0));
+                }
             }
 
 //            System.out.println("saveKitty::" + kitty.toString());
@@ -103,7 +125,7 @@ public class KittyViewModel {
         }
     }
 
-    public void saveQBDialog(QBDialog dialog) {
+    public void saveQBDialog(QBChatDialog dialog) {
         Kitty kitty = new Kitty();
         kitty.setQbDialog(dialog);
         saveKitty(kitty);
@@ -117,6 +139,7 @@ public class KittyViewModel {
 
     public void updateKitty(Kitty kitty) {
         try {
+            DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
             String selection = KittyBeeContract.Kitties._ID + "=?";
             String[] selectionArg = new String[]{"" + kitty.getId()};
 
@@ -141,40 +164,50 @@ public class KittyViewModel {
             ContentValues values = new ContentValues();
             values.put(KittyBeeContract.Kitties.GROUP_ID, group.getGroupID());
             values.put(KittyBeeContract.Kitties.GROUP, gson.toJson(group));
-
+            DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
             queryHandler.startUpdate(0, null, KittyBeeContract.Kitties.CONTENT_URI, values, selection, selectionArg);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
     }
 
-    public void updateDialog(QBDialog dialog) {
+    public void updateDialog(QBChatDialog dialog) {
+        updateDialog(new ContentValues(), dialog);
+    }
+
+    public void updateWithSyncableDialog(QBChatDialog dialog) {
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(KittyBeeContract.Kitties.SYNCABLE, 1);
+            updateDialog(values, dialog);
+        } catch (Exception e) {
+            AppLog.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    private void updateDialog(ContentValues values, QBChatDialog dialog) {
         String selection = KittyBeeContract.Kitties.QB_DIALOG_ID + "=?";
         String[] selectionArg = new String[]{"" + dialog.getDialogId()};
-//
-//        String selection = KittyBeeContract.Kitties.QB_DIALOG_ID + "=?";
-//        String[] selectionArg = new String[]{"" + dialog.getDialogId()};
-//
-//        if (dialog.getCustomData() != null) {
-//            int keyId = (int) dialog.getCustomData().get(KEY_ID);
-//            selection = KittyBeeContract.ChatDialog._ID + "=?";
-//            selectionArg = new String[]{"" + keyId};
-//        }
 
         try {
             Gson gson = new Gson();
-            ContentValues values = new ContentValues();
             values.put(KittyBeeContract.Kitties.QB_DIALOG_ID, dialog.getDialogId());
             values.put(KittyBeeContract.Kitties.QB_DIALOG, gson.toJson(dialog));
+            QBDialogCustomData data = dialog.getCustomData();
+            if (data != null && data.get(KittyBeeContract.Kitties.LAST_MESSAGE_PAGE_NO) != null) {
+                int pageNo = (int) data.get(KittyBeeContract.Kitties.LAST_MESSAGE_PAGE_NO);
+                values.put(KittyBeeContract.Kitties.LAST_MESSAGE_PAGE_NO, pageNo);
+            }
             values.put(KittyBeeContract.Kitties.QB_LAST_MSG_TIMESTAMP, dialog.getLastMessageDateSent());
-
-            queryHandler.startUpdate(0, null, KittyBeeContract.Kitties.CONTENT_URI, values, selection, selectionArg);
+//            DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
+            context.getContentResolver().update(KittyBeeContract.Kitties.CONTENT_URI, values, selection, selectionArg);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }
     }
 
-    public void updateDialogByKittyId(int kittyId, QBDialog dialog) {
+    public void updateDialogByKittyId(int kittyId, QBChatDialog dialog) {
         String selection = KittyBeeContract.Kitties.GROUP_ID + "=?";
         String[] selectionArg = new String[]{"" + kittyId};
 //
@@ -192,7 +225,7 @@ public class KittyViewModel {
             ContentValues values = new ContentValues();
             values.put(KittyBeeContract.Kitties.QB_DIALOG_ID, dialog.getDialogId());
             values.put(KittyBeeContract.Kitties.QB_DIALOG, gson.toJson(dialog));
-
+            DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
             queryHandler.startUpdate(0, null, KittyBeeContract.Kitties.CONTENT_URI, values, selection, selectionArg);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -208,7 +241,7 @@ public class KittyViewModel {
             ContentValues values = new ContentValues();
             values.put(KittyBeeContract.Kitties.GROUP_ID, group.getGroupID());
             values.put(KittyBeeContract.Kitties.GROUP, gson.toJson(group));
-
+            DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
             queryHandler.startUpdate(0, null, KittyBeeContract.Kitties.CONTENT_URI, values, selection, selectionArg);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -225,6 +258,43 @@ public class KittyViewModel {
             ContentResolver resolver = context.getContentResolver();
             ContentValues values = new ContentValues();
             values.put(KittyBeeContract.Kitties.DELETED, 1);
+            deletedRow = resolver.update(uri, values, selection, selectionArg);
+        } catch (Exception e) {
+            AppLog.e(TAG, e.getMessage(), e);
+        }
+        return deletedRow;
+    }
+
+    public int updatePageNoWithDisableSync(int page, int kittyId) {
+        int updateRow = 0;
+        try {
+            String selection = KittyBeeContract.Kitties._ID + "=?";
+            String[] selectionArg = new String[]{"" + kittyId};
+
+            Uri uri = KittyBeeContract.Kitties.CONTENT_URI;
+            ContentResolver resolver = context.getContentResolver();
+            ContentValues values = new ContentValues();
+            values.put(KittyBeeContract.Kitties.LAST_MESSAGE_PAGE_NO, page);
+            values.put(KittyBeeContract.Kitties.SYNCABLE, 0);
+            DBQueryHandler handler = new DBQueryHandler(resolver);
+            handler.startUpdate(0, 0, uri, values, selection, selectionArg);
+//            updateRow = resolver.update(uri, values, selection, selectionArg);
+        } catch (Exception e) {
+            AppLog.e(TAG, e.getMessage(), e);
+        }
+        return updateRow;
+    }
+
+    public int updateSyncable(int kittyId) {
+        int deletedRow = 0;
+        try {
+            String selection = KittyBeeContract.Kitties._ID + "=?";
+            String[] selectionArg = new String[]{"" + kittyId};
+
+            Uri uri = KittyBeeContract.Kitties.CONTENT_URI;
+            ContentResolver resolver = context.getContentResolver();
+            ContentValues values = new ContentValues();
+            values.put(KittyBeeContract.Kitties.SYNCABLE, 1);
             deletedRow = resolver.update(uri, values, selection, selectionArg);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -249,27 +319,38 @@ public class KittyViewModel {
         return deletedRow;
     }
 
-    public void fetchKitties(int offset, OnQueryHandlerListener<ArrayList<Kitty>> listener) {
+    public void fetchKitties(int offset, int limit, OnQueryHandlerListener<ArrayList<Kitty>> listener) {
         String selection = KittyBeeContract.Kitties.DELETED + "=? AND " +
-                KittyBeeContract.Kitties.QB_DIALOG_ID + " !=? AND "+
+                KittyBeeContract.Kitties.QB_DIALOG_ID + " !=? AND " +
                 KittyBeeContract.Kitties.QB_DIALOG + " !=? ";
         String[] selectionArg = new String[]{"0", "", ""};
+        limit = limit == 0 ? ChatHelper.ITEMS_PER_PAGE : limit;
+        fetchKitties(offset, limit, selection, selectionArg, listener);
+    }
 
-        fetchKitties(offset, PAGE_LIMIT, selection, selectionArg, listener);
+    public void fetchSyncableKitties(int offset, OnQueryHandlerListener<ArrayList<Kitty>> listener) {
+        String selection = " (" + KittyBeeContract.Kitties.DELETED + "=? AND " +
+                KittyBeeContract.Kitties.QB_DIALOG_ID + " !=? AND " +
+                KittyBeeContract.Kitties.QB_DIALOG + " !=? ) AND (" +
+                KittyBeeContract.Kitties.LAST_MESSAGE_PAGE_NO + " =? OR " +
+                KittyBeeContract.Kitties.SYNCABLE + " =? )";
+        String[] selectionArg = new String[]{"0", "", "", "0", "1"};
+
+        fetchKitties(offset, ChatHelper.ITEMS_PER_PAGE, selection, selectionArg, listener);
     }
 
     public void fetchKittyByQBDialogId(String dialogId, OnQueryHandlerListener<ArrayList<Kitty>> listener) {
         String selection = KittyBeeContract.Kitties.DELETED + "=? AND " + KittyBeeContract.Kitties.QB_DIALOG_ID + "=?";
         String[] selectionArg = new String[]{"0", dialogId};
 
-        fetchKitties(0, PAGE_LIMIT, selection, selectionArg, listener);
+        fetchKitties(0, ChatHelper.ITEMS_PER_PAGE, selection, selectionArg, listener);
     }
 
     public void fetchKittyById(int kittyId, OnQueryHandlerListener<ArrayList<Kitty>> listener) {
         String selection = KittyBeeContract.Kitties.DELETED + "=? AND " + KittyBeeContract.Kitties._ID + "=?";
         String[] selectionArg = new String[]{"0", "" + kittyId};
 
-        fetchKitties(0, PAGE_LIMIT, selection, selectionArg, listener);
+        fetchKitties(0, ChatHelper.ITEMS_PER_PAGE, selection, selectionArg, listener);
     }
 
     private void fetchKitties(int offset, int limit, String selection, String[] selectionArg, final OnQueryHandlerListener listener) {
@@ -293,11 +374,12 @@ public class KittyViewModel {
                         if (cursor != null && cursor.getCount() > 0) {
                             while (cursor.moveToNext()) {
                                 Kitty kitty = new Kitty();
-                                kitty.setId(cursor.getInt(0));
-                                kitty.setDialogId(cursor.getString(2));
-                                kitty.setGroup(new Gson().fromJson(cursor.getString(3), ChatData.class));
-                                String dialogStr = removeSDFFromQBDialog(cursor.getString(4));
-                                kitty.setQbDialog(new Gson().fromJson(dialogStr, QBDialog.class));
+                                kitty.setId(cursor.getInt(cursor.getColumnIndex(KittyBeeContract.Kitties._ID)));
+                                kitty.setDialogId(cursor.getString(cursor.getColumnIndex(KittyBeeContract.Kitties.QB_DIALOG_ID)));
+                                kitty.setGroup(new Gson().fromJson(cursor.getString(cursor.getColumnIndex(KittyBeeContract.Kitties.GROUP)), ChatData.class));
+                                String dialogStr = removeSDFFromQBDialog(cursor.getString(cursor.getColumnIndex(KittyBeeContract.Kitties.QB_DIALOG)));
+                                kitty.setQbDialog(new Gson().fromJson(dialogStr, QBChatDialog.class));
+                                kitty.setLastMessagePageNo(cursor.getInt(cursor.getColumnIndex(KittyBeeContract.Kitties.LAST_MESSAGE_PAGE_NO)));
                                 kitties.add(kitty);
                             }
                             cursor.close();
@@ -332,10 +414,11 @@ public class KittyViewModel {
         fetchKitties(0, 0, selection, selectionArg, listener);
     }
 
-    public void fetchGroups(int offset, final OnQueryHandlerListener listener) {
+    public void fetchGroups(int offset, int limit, final OnQueryHandlerListener listener) {
         String selection = KittyBeeContract.Kitties.DELETED + "=? AND " + KittyBeeContract.Kitties.GROUP_ID + " != ?";
         String[] selectionArg = new String[]{"0", ""};
-        fetchGroups(offset, PAGE_LIMIT, selection, selectionArg, listener);
+        limit = limit == 0 ? ChatHelper.ITEMS_PER_PAGE : limit;
+        fetchGroups(offset, limit, selection, selectionArg, listener);
     }
 
     private void fetchGroups(int offset, int limit, String selection, String[] selectionArg, final OnQueryHandlerListener listener) {
@@ -441,7 +524,7 @@ public class KittyViewModel {
                     new String[]{KittyBeeContract.Kitties.QB_DIALOG},
                     selection, selectionArg, null);
 
-            final ArrayList<QBDialog> dialogs = new ArrayList<>();
+            final ArrayList<QBChatDialog> dialogs = new ArrayList<>();
             BackgroundExecutorThread backgroundExecutorThread = new BackgroundExecutorThread();
             backgroundExecutorThread.execute(new Interactor() {
                 @Override
@@ -450,7 +533,7 @@ public class KittyViewModel {
                         if (cursor != null && cursor.getCount() > 0) {
                             while (cursor.moveToNext()) {
                                 String strJson = removeSDFFromQBDialog(cursor.getString(0));
-                                QBDialog dialog = new Gson().fromJson(strJson, QBDialog.class);
+                                QBChatDialog dialog = new Gson().fromJson(strJson, QBChatDialog.class);
                                 dialogs.add(dialog);
                             }
                             cursor.close();
@@ -514,6 +597,7 @@ public class KittyViewModel {
             String selection = KittyBeeContract.Kitties.GROUP_ID + "=?";
             String[] selectionArg = new String[]{"" + groupId};
             Uri uri = KittyBeeContract.Kitties.CONTENT_URI;
+            DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
             queryHandler.startDelete(0, null, uri, selection, selectionArg);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -526,6 +610,7 @@ public class KittyViewModel {
             String selection = KittyBeeContract.Kitties.QB_DIALOG_ID + "=?";
             String[] selectionArg = new String[]{"" + qbdialogId};
             Uri uri = KittyBeeContract.Kitties.CONTENT_URI;
+            DBQueryHandler queryHandler = new DBQueryHandler(context.getContentResolver());
             queryHandler.startDelete(0, null, uri, selection, selectionArg);
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
@@ -619,4 +704,15 @@ public class KittyViewModel {
         }
         return maxId + 1;
     }
+
+    public void getPrivateDialogWithUser(Integer memberId, OnQueryHandlerListener listener) {
+        try {
+            String selection = KittyBeeContract.Kitties.PRIVATE_CHAT_MEMBER_ID + "=?";
+            String[] selectionArg = new String[]{"" + memberId};
+            fetchKitties(0, 0, selection, selectionArg, listener);
+        } catch (Exception e) {
+            AppLog.e(TAG, e.getMessage(), e);
+        }
+    }
+
 }

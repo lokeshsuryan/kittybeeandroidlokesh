@@ -28,6 +28,7 @@ import android.widget.ProgressBar;
 
 import com.google.gson.Gson;
 import com.kittyapplication.R;
+import com.kittyapplication.adapter.MediaAdapter;
 import com.kittyapplication.adapter.ParticipantAdapter;
 import com.kittyapplication.chat.ui.activity.AttachmentZoomActivity;
 import com.kittyapplication.custom.CustomTextViewBold;
@@ -45,9 +46,10 @@ import com.kittyapplication.utils.DateTimeUtils;
 import com.kittyapplication.utils.ImageUtils;
 import com.kittyapplication.utils.Utils;
 import com.quickblox.chat.QBChatService;
+import com.quickblox.chat.QBRestChatService;
 import com.quickblox.chat.model.QBAttachment;
 import com.quickblox.chat.model.QBChatMessage;
-import com.quickblox.chat.model.QBDialog;
+import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.QBResponseException;
 import com.quickblox.core.request.QBRequestGetBuilder;
@@ -73,7 +75,7 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     private LinearLayout llMedia;
     private ArrayList<String> mMediaList = new ArrayList<>();
     private String mDialogId;
-    private QBDialog qbDialog;
+    private QBChatDialog qbDialog;
     private View mBlurView;
     private CustomTextViewNormal mTxtEmptyText;
     private String mChatDataString;
@@ -86,7 +88,7 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         mLvMembers = (ListView) findViewById(R.id.lvChatMember);
         mImgGroup = (ImageView) findViewById(R.id.imgChatGroupImage);
         mChatDataString = getIntent().getStringExtra(AppConstant.INTENT_CHAT);
-        qbDialog = (QBDialog) getIntent().getSerializableExtra(AppConstant.INTENT_MEDIA_DATA);
+        qbDialog = (QBChatDialog) getIntent().getSerializableExtra(AppConstant.INTENT_MEDIA_DATA);
         mDialogId = getIntent().getStringExtra(AppConstant.INTENT_DIALOG_ID);
 
 
@@ -159,7 +161,7 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     public void setDataIntoList(ParticipantDao dao) {
         try {
             ImageUtils.getImageLoader(this).displayImage(dao.getGroupIMG(), mImgGroup);
-            mTxtCount.setText(String.valueOf(dao.getParticipant().size()));
+            mTxtCount.setText(String.valueOf(dao.getCount()));
             ChatData mChatData = new Gson().fromJson(mChatDataString, ChatData.class);
             if (mChatData != null && Utils.isValidString(mChatData.getRule())) {
                 mAdapter = new ParticipantAdapter(this, dao.getParticipant(), mChatData.getRule());
@@ -420,10 +422,9 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
             requestBuilder.setLimit(100);
             requestBuilder.addRule("attachments.type", QueryRule.EQ, QBAttachment.PHOTO_TYPE);
 
-
-            QBChatService.getDialogMessages(qbDialog, requestBuilder, new QBEntityCallback<ArrayList<QBChatMessage>>() {
+            QBRestChatService.getDialogMessages(qbDialog, requestBuilder).performAsync(new QBEntityCallback<ArrayList<QBChatMessage>>() {
                 @Override
-                public void onSuccess(ArrayList<QBChatMessage> messages, Bundle args) {
+                public void onSuccess(ArrayList<QBChatMessage> messages, Bundle bundle) {
                     if (messages != null && !messages.isEmpty()) {
                         for (QBChatMessage message : messages) {
                             for (QBAttachment attachment : message.getAttachments()) {
@@ -436,10 +437,11 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
                 }
 
                 @Override
-                public void onError(QBResponseException errors) {
+                public void onError(QBResponseException e) {
                     setMediaData();
                 }
             });
+
         } catch (Exception e) {
             AppLog.e(TAG, e.getMessage(), e);
         }

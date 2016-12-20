@@ -2,6 +2,7 @@ package com.kittyapplication.chat.utils;
 
 
 import com.kittyapplication.chat.R;
+import com.kittyapplication.core.CoreApp;
 import com.kittyapplication.core.utils.ResourceUtils;
 
 public interface Consts {
@@ -9,7 +10,7 @@ public interface Consts {
     String GCM_SENDER_ID = "23596211365";
 
     //TODO BOOLEAN VENTURA SERVER
-   /* String QB_APP_ID = "42779";
+    /*String QB_APP_ID = "42779";
     String QB_AUTH_KEY = "LLLxgsMYpBgmqwf";
     String QB_AUTH_SECRET = "x7rx-j7ZMSTnBWn";
     String QB_ACCOUNT_KEY = "KmWfth7Wo2EVHqtWiE7P";*/
@@ -21,8 +22,11 @@ public interface Consts {
     String QB_ACCOUNT_KEY = "NC1zXvj6hkp6DbavtytW";
 
     String QB_SUBSCRIPTION = "qb_subscription";
-    int PREFERRED_IMAGE_SIZE_PREVIEW = ResourceUtils.getDimen(R.dimen.chat_attachment_preview_size);
-    int PREFERRED_IMAGE_SIZE_FULL = ResourceUtils.dpToPx(320);
+    int PREFERRED_IMAGE_SIZE_PREVIEW = ResourceUtils
+            .getDimen(CoreApp.getInstance().getApplicationContext(),
+                    R.dimen.chat_attachment_preview_size);
+    int PREFERRED_IMAGE_SIZE_FULL = ResourceUtils.dpToPx(CoreApp.getInstance().getApplicationContext()
+            , 320);
 
     public static final String KEY_USERNAME = "username";
     public static final String KEY_IMAGE = "image";
