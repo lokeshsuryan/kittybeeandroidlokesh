@@ -40,6 +40,7 @@ import java.util.List;
  * Created by Pintu Riontech on 10/8/16.
  * vaghela.pintu31@gmail.com
  */
+
 public class AddGroupActivity extends BaseActivity implements AddGroupInterface, SearchListener {
     private static final String TAG = AddGroupActivity.class.getSimpleName();
     private ListView mLvContactList;

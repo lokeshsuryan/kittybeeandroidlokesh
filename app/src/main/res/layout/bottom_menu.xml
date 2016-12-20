@@ -33,7 +33,7 @@
             android:textSize="@dimen/h7" />
     </LinearLayout>
 
-    <LinearLayout
+   <!-- <LinearLayout
         android:id="@+id/llBottomJewellery"
         android:layout_width="@dimen/common_0_dp"
         android:layout_height="wrap_content"
@@ -55,7 +55,7 @@
             android:paddingBottom="@dimen/common_5_dp"
             android:text="@string/jewellery_s"
             android:textSize="@dimen/h7" />
-    </LinearLayout>
+    </LinearLayout>-->
 
 
     <LinearLayout
@@ -80,6 +80,26 @@
             android:paddingBottom="@dimen/common_5_dp"
             android:text="@string/boutique_s"
             android:textSize="@dimen/h7" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/llBottomJewellery"
+        android:layout_width="@dimen/common_0_dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:padding="2dp"
+            android:id="@+id/imgJewellery"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:scaleType="center"
+            android:src="@mipmap/more_pro" />
+
     </LinearLayout>
 
     <LinearLayout

@@ -9,6 +9,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import com.kittyapplication.chat.R;
 import com.kittyapplication.chat.utils.SharedPreferencesUtil;
@@ -28,6 +29,7 @@ public abstract class BaseActivity extends CoreBaseActivity implements QbSession
 
     protected ActionBar actionBar;
     protected boolean isAppSessionActive;
+
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {

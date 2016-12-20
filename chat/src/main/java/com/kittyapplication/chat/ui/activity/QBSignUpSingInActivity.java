@@ -21,11 +21,13 @@ public abstract class QBSignUpSingInActivity extends CoreBaseActivity {
     private static final String QUICK_BLOX_PASSWORD = "KittyBeeArun";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
     }
 
-    public void signUp(final QBUser qbUser, final String profilePic) {
+    public void signUp(final QBUser qbUser, final String profilePic)
+    {
         if (!isValidData(qbUser.getLogin())) {
             return;
         }

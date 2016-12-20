@@ -1,0 +1,36 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+    <RelativeLayout
+       android:gravity="center"
+        android:padding="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/country_photo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/action_settings"
+            android:src="@mipmap/more_pro"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/country_name"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/color_primary_dark"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>
