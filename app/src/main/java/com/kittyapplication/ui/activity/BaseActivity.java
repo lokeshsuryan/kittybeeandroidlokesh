@@ -20,10 +20,14 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -31,8 +35,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kittyapplication.R;
+import com.kittyapplication.adapter.PromotionalRecylerAdapter;
 import com.kittyapplication.custom.CustomTextViewNormal;
 import com.kittyapplication.listener.SearchListener;
+import com.kittyapplication.model.PromotionalItemObject;
 import com.kittyapplication.ui.viewmodel.BaseViewModel;
 import com.kittyapplication.utils.AlertDialogUtils;
 import com.kittyapplication.utils.AppConstant;
@@ -42,6 +48,9 @@ import com.kittyapplication.utils.PreferanceUtils;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Pintu Riontech on 6/8/16.
@@ -70,6 +79,14 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     private ProgressBar mPbLoader;
     private MaterialSearchView mSearchbar;
 
+
+    private LinearLayout animation_slide;
+    private TextView cancel_animation;
+    Animation slide_down,slide_up;
+    boolean slide_check = false;
+    RecyclerView permotional_list;
+    private GridLayoutManager lLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +113,14 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 
     private void initView() {
         try {
+
+
+            //Load animation
+            slide_down = AnimationUtils.loadAnimation(getApplicationContext(),
+                    R.anim.slide_down);
+
+            slide_up = AnimationUtils.loadAnimation(getApplicationContext(),
+                    R.anim.slide_up);
 
             mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
             mViewModel = new BaseViewModel(this);
@@ -129,6 +154,13 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
             mLlBottom = (LinearLayout) findViewById(R.id.llBottom);
             mLlBottom.setVisibility(View.VISIBLE);
 
+            animation_slide = (LinearLayout)findViewById(R.id.animation_slide);
+            cancel_animation = (TextView)findViewById(R.id.cancel_animation);
+            cancel_animation.setOnClickListener(this);
+
+            permotional_list = (RecyclerView)findViewById(R.id.permotional_list);
+
+
             if (hasDrawer()) {
                 //            abc_ic_ab_back_mtrl_am_alpha
                 final Drawable upArrow = ContextCompat.getDrawable(this,
@@ -155,9 +187,39 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
             clickEvents();
 
             setDrawerHeaderItems();
+
+            setPromotionalList();
         } catch (Exception e) {
         }
 
+    }
+
+
+    public void setPromotionalList()
+    {
+        List<PromotionalItemObject> rowListItem = getAllItemList();
+        lLayout = new GridLayoutManager(this, 3);
+
+        permotional_list.setHasFixedSize(true);
+        permotional_list.setLayoutManager(lLayout);
+
+        PromotionalRecylerAdapter rcAdapter = new PromotionalRecylerAdapter(this, rowListItem);
+        permotional_list.setAdapter(rcAdapter);
+    }
+
+
+
+    private List<PromotionalItemObject> getAllItemList(){
+
+        List<PromotionalItemObject> allItems = new ArrayList<PromotionalItemObject>();
+        allItems.add(new PromotionalItemObject("Foot Wear", R.mipmap.footwear_200));
+        allItems.add(new PromotionalItemObject("Fashion", R.mipmap.fashion_200));
+        allItems.add(new PromotionalItemObject("Beauty",  R.mipmap.beauty_200));
+        allItems.add(new PromotionalItemObject("Nail Art",  R.mipmap.nail_art));
+        allItems.add(new PromotionalItemObject("GYM",  R.mipmap.gym_200));
+
+
+        return allItems;
     }
 
     /**
@@ -234,7 +296,33 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         switch (v.getId()) {
 
             case R.id.llBottomJewellery:
-                mViewModel.onBottomItemSelect(0);
+
+                if(slide_check==false)
+                {
+                    // Start animation
+                    animation_slide.setVisibility(View.VISIBLE);
+                    animation_slide.startAnimation(slide_up);
+
+                    slide_check = true;
+                }
+                else
+                {
+                    animation_slide.startAnimation(slide_down);
+                    animation_slide.setVisibility(View.GONE);
+
+                    slide_check = false;
+
+                }
+
+
+               // mViewModel.onBottomItemSelect(0);
+                break;
+            case R.id.cancel_animation:
+
+                animation_slide.startAnimation(slide_down);
+                animation_slide.setVisibility(View.GONE);
+
+                slide_check = false;
                 break;
 
             case R.id.llBottomRestaurant:

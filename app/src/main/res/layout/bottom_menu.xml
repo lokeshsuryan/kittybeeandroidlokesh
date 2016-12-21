@@ -18,22 +18,21 @@
         android:orientation="vertical">
 
         <ImageView
+            android:padding="2dp"
             android:id="@+id/imgRestaurant"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:src="@drawable/ic_restaurant" />
+            android:scaleType="center"
+            android:src="@mipmap/restaurant_180_160" />
 
-        <com.kittyapplication.custom.CustomTextViewBold
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:paddingBottom="@dimen/common_5_dp"
-            android:text="@string/restaurant_s"
-            android:textSize="@dimen/h7" />
+
     </LinearLayout>
 
-    <LinearLayout
+
+
+
+   <!-- <LinearLayout
         android:id="@+id/llBottomJewellery"
         android:layout_width="@dimen/common_0_dp"
         android:layout_height="wrap_content"
@@ -55,7 +54,7 @@
             android:paddingBottom="@dimen/common_5_dp"
             android:text="@string/jewellery_s"
             android:textSize="@dimen/h7" />
-    </LinearLayout>
+    </LinearLayout>-->
 
 
     <LinearLayout
@@ -67,20 +66,38 @@
         android:orientation="vertical">
 
         <ImageView
+            android:padding="2dp"
             android:id="@+id/imgBoutique"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:src="@drawable/ic_boutique" />
+            android:scaleType="center"
+            android:src="@mipmap/newyear_180" />
 
-        <com.kittyapplication.custom.CustomTextViewBold
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:paddingBottom="@dimen/common_5_dp"
-            android:text="@string/boutique_s"
-            android:textSize="@dimen/h7" />
+
     </LinearLayout>
+
+
+
+    <LinearLayout
+        android:id="@+id/llBottomJewellery"
+        android:layout_width="@dimen/common_0_dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:padding="2dp"
+            android:id="@+id/imgJewellery"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:scaleType="center"
+            android:src="@mipmap/more_180" />
+
+    </LinearLayout>
+
 
     <LinearLayout
         android:id="@+id/llBottomPartners"
@@ -91,19 +108,15 @@
         android:orientation="vertical">
 
         <ImageView
+            android:padding="2dp"
             android:id="@+id/imgPartners"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:src="@drawable/ic_partners" />
+            android:scaleType="center"
+            android:src="@mipmap/popup_180" />
 
-        <com.kittyapplication.custom.CustomTextViewBold
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:paddingBottom="@dimen/common_5_dp"
-            android:text="@string/partners_s"
-            android:textSize="@dimen/h7" />
+
     </LinearLayout>
 
 
@@ -115,20 +128,17 @@
         android:clickable="true"
         android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/imgParlour"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_parlour" />
 
-        <com.kittyapplication.custom.CustomTextViewBold
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
+            android:padding="2dp"
+            android:id="@+id/imgParlour"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:paddingBottom="@dimen/common_5_dp"
-            android:text="@string/heads_up"
-            android:textSize="@dimen/h7" />
+            android:scaleType="center"
+            android:src="@mipmap/headsup_180" />
+
+
     </LinearLayout>
 
 </LinearLayout>

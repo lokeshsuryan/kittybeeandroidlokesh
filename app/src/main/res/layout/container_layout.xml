@@ -49,6 +49,98 @@
 
         </RelativeLayout>
 
+
+        <LinearLayout
+            android:weightSum="1"
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:id="@+id/animation_slide"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <View
+                android:layout_weight=".2"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"/>
+
+
+            <LinearLayout
+                android:layout_marginLeft="7dp"
+                android:layout_marginRight="7dp"
+                android:orientation="vertical"
+                android:layout_weight=".8"
+                android:layout_width="match_parent"
+                android:layout_height="0dp">
+
+                <LinearLayout
+                    android:weightSum="1"
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:layout_marginTop="17dp"
+                    android:background="@drawable/rectangle_slide_updwn"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+
+                    <LinearLayout
+                        android:weightSum="1"
+                        android:orientation="horizontal"
+                        android:layout_weight=".085"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp">
+
+
+                        <TextView
+                            android:id="@+id/title"
+                            android:text="Permotional Listing"
+                            android:textStyle="bold"
+                            android:textSize="13sp"
+                            android:textColor="#0B3349"
+                            android:gravity="center"
+                            android:layout_weight=".87"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent" />
+
+                        <TextView
+                            android:id="@+id/cancel_animation"
+                            android:background="@drawable/circle_shape"
+                            android:text="X"
+                            android:textSize="17sp"
+                            android:textColor="#fff"
+                            android:gravity="center"
+                            android:layout_weight=".12"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent" />
+
+                    </LinearLayout>
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/permotional_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight=".9"
+                        android:scrollbars="vertical" />
+
+                </LinearLayout>
+
+
+                <!--<TextView
+                    android:id="@+id/cancel_animation"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/circle_shape"
+                    android:text="X"
+                    android:textSize="30sp"
+                    android:textColor="#fff"
+                    android:gravity="center"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp" />-->
+            </LinearLayout>
+
+
+        </LinearLayout>
+
         <include
             layout="@layout/bottom_menu"
             android:layout_width="match_parent"
